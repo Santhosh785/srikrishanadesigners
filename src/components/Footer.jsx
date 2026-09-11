@@ -36,7 +36,7 @@ const Footer = () => {
         </div>
 
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} Sri Krishna Designers</p>
+          <p suppressHydrationWarning>© {new Date().getFullYear()} Sri Krishna Designers</p>
           <p>Designed with attention to detail.</p>
         </div>
       </div>
