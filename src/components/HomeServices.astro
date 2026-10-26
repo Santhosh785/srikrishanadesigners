@@ -1,0 +1,41 @@
+---
+import { Ruler, Scissors, Sparkles } from '@lucide/astro';
+import { getServices, priceRange } from '../lib/content';
+import '../styles/Services.css';
+
+const services = await getServices();
+const icons = [Scissors, Sparkles, Ruler];
+---
+
+<section id="services" class="services">
+  <div class="container">
+    <div class="services-heading">
+      <div>
+        <p class="eyebrow">The studio</p>
+        <h2>Made around <em>you.</em></h2>
+      </div>
+      <p class="services-intro">
+        No rushed choices. Every appointment begins with a conversation about
+        how you want to look, move, and feel.
+      </p>
+    </div>
+
+    <div class="services-grid">
+      {services.map((service, index) => {
+        const Icon = icons[index % icons.length];
+        return (
+          <article class="service-card">
+            <a href={`/services/${service.id}/`} class="service-link-card">
+              <div class="service-meta"><span>0{index + 1}</span><Icon size={22} stroke-width={1.6} aria-hidden="true" /></div>
+              <h3>{service.data.title}</h3>
+              <p>{service.data.description}</p>
+              <span class="price-tag">{priceRange(service.data.priceFrom, service.data.priceTo)} · {service.data.turnaround}</span>
+              <span class="more">View details →</span>
+            </a>
+            <span class="service-rule" aria-hidden="true" />
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</section>

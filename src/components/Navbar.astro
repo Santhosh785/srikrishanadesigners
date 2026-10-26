@@ -1,0 +1,63 @@
+---
+import { Image } from 'astro:assets';
+import { Menu, X } from '@lucide/astro';
+import logo from '../assets/sri-krishna-designers-logo.webp';
+import '../styles/Navbar.css';
+
+const links = [
+  { href: '/services/designer-blouse-stitching/', label: 'Blouses' },
+  { href: '/services/bridal-wear-lehenga/', label: 'Bridal' },
+  { href: '/services/salwar-kurti-stitching/', label: 'Salwar & Kurti' },
+  { href: '/blog/', label: 'Journal' },
+  { href: '/about/', label: 'About' },
+];
+const path = Astro.url.pathname;
+---
+
+<header class="navbar" data-navbar>
+  <div class="container nav-container">
+    <a href="/" class="nav-logo" aria-label="Sri Krishna Designers home">
+      <Image src={logo} alt="Sri Krishna Designers" width={112} height={84} loading="eager" fetchpriority="high" />
+    </a>
+
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-label="Open navigation"
+      aria-expanded="false"
+      aria-controls="primary-navigation"
+      data-nav-toggle
+    >
+      <Menu size={22} class="icon-open" aria-hidden="true" />
+      <X size={22} class="icon-close" aria-hidden="true" />
+    </button>
+
+    <nav id="primary-navigation" class="nav-menu" aria-label="Primary navigation">
+      {links.map((l) => (
+        <a href={l.href} class="nav-link" aria-current={path.startsWith(l.href) ? 'page' : undefined}>
+          {l.label}
+        </a>
+      ))}
+      <a href="/contact/" class="nav-link nav-link-mobile">Book a fitting</a>
+    </nav>
+
+    <a href="/contact/" class="nav-cta" data-track="nav_book">Book a fitting</a>
+  </div>
+</header>
+
+<script>
+  const navbar = document.querySelector<HTMLElement>('[data-navbar]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const menu = document.getElementById('primary-navigation');
+
+  const onScroll = () => navbar?.classList.toggle('scrolled', window.scrollY > 36);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    menu?.classList.toggle('active', open);
+  });
+</script>

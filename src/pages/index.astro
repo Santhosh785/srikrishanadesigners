@@ -1,0 +1,126 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import HomeServices from '../components/HomeServices.astro';
+import GalleryGrid from '../components/GalleryGrid.astro';
+import Reviews from '../components/Reviews.astro';
+import Faq from '../components/Faq.astro';
+import PostCard from '../components/PostCard.astro';
+import { site, fullAddress } from '../site.config';
+import { faqSchema } from '../lib/schema';
+import { getCollection } from 'astro:content';
+import { getPosts, getServices, priceRange } from '../lib/content';
+
+const [posts, services, gallery] = await Promise.all([getPosts(), getServices(), getCollection('gallery')]);
+const galleryCount = gallery.length;
+const latest = posts.slice(0, 3);
+const lowest = Math.min(...services.map((s) => s.data.priceFrom));
+
+// TODO_FILL: confirm these answers with the owner.
+const faqs = [
+  {
+    question: `Where is ${site.name} located?`,
+    answer: `Our studio is at ${fullAddress}. We are open ${site.hoursDisplay}. Call ${site.phoneDisplay} or message us on WhatsApp before visiting so a designer is free to take your measurements.`,
+  },
+  {
+    question: 'Can I bring my own fabric?',
+    answer:
+      'Yes. Most clients bring their own saree blouse piece, lehenga fabric or dress material. We check the fabric at the consultation and tell you if it needs lining, interfacing or extra material for the design you want.',
+  },
+  {
+    question: 'How long does stitching take?',
+    answer: `It depends on the work: ${services.map((s) => `${s.data.title.toLowerCase()} usually takes ${s.data.turnaround}`).join('; ')}. Bridal orders should be booked six to eight weeks before the wedding.`,
+  },
+  {
+    question: 'How much does blouse stitching cost?',
+    answer: `Stitching starts from ${priceRange(lowest).replace('From ', '')}. The final price depends on the cut, lining, padding and any hand embroidery such as aari or maggam work — we confirm it at the consultation before cutting your fabric.`,
+  },
+  {
+    question: 'Do I need an appointment?',
+    answer:
+      'Walk-ins are welcome during studio hours, but booking an appointment means a designer can spend unhurried time on your consultation and measurements. Bridal consultations are by appointment only.',
+  },
+];
+---
+
+<BaseLayout
+  title={`Designer Blouse, Bridal & Salwar Stitching in ${site.address.city}`}
+  description={`${site.name}: designer & bridal blouse stitching, lehengas and custom salwar suits in ${site.address.city}. Personal consultation, trial fitting, on-time delivery.`}
+  schema={[faqSchema(faqs, '/')]}
+>
+  <Hero />
+  <HomeServices />
+
+  <section class="section">
+    <div class="container split">
+      <div>
+        <p class="eyebrow">In the boutique</p>
+        <h2 class="section-title">Ready-made <em>collection.</em></h2>
+      </div>
+      <p class="page-lede">
+        Alongside custom tailoring, the studio carries a curated selection of sarees, kurtis and occasion
+        wear — every piece can be altered in-house for a perfect fit. Visit the studio to see what's new
+        this season.
+      </p>
+    </div>
+  </section>
+
+  {galleryCount > 0 && (
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <p class="eyebrow">Our work</p>
+        <h2 class="section-title">Recently <em>finished.</em></h2>
+        <GalleryGrid limit={8} />
+        <p style="margin-top: 24px;"><a href="/gallery/" class="text-link">See the full gallery</a></p>
+      </div>
+    </section>
+  )}
+
+  <Reviews />
+
+  <section class="section" aria-labelledby="visit-heading">
+    <div class="container">
+      <p class="eyebrow">Visit</p>
+      <h2 id="visit-heading" class="section-title">Find the <em>studio.</em></h2>
+      <div class="visit-grid">
+        <div>
+          <h3>Address</h3>
+          <address><a href={site.mapsUrl} rel="noopener" target="_blank" data-track="directions">{fullAddress}</a></address>
+        </div>
+        <div>
+          <h3>Hours</h3>
+          <p>{site.hoursDisplay}</p>
+        </div>
+        <div>
+          <h3>Contact</h3>
+          <p>
+            <a href={`tel:${site.phone}`} data-track="call">{site.phoneDisplay}</a><br />
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </p>
+        </div>
+      </div>
+      {site.mapsEmbedUrl && (
+        <iframe class="map-embed" style="margin-top: 36px;" src={site.mapsEmbedUrl} title={`Map to ${site.name}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade" />
+      )}
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <Faq faqs={faqs} />
+    </div>
+  </section>
+
+  {latest.length > 0 && (
+    <section class="section" style="padding-top: 0;" aria-labelledby="journal-heading">
+      <div class="container">
+        <p class="eyebrow">Journal</p>
+        <h2 id="journal-heading" class="section-title">Tailoring <em>advice.</em></h2>
+        <div class="card-grid">
+          {latest.map((post) => <PostCard post={post} headingLevel="h3" />)}
+        </div>
+        <p style="margin-top: 28px;"><a href="/blog/" class="text-link">All articles</a></p>
+      </div>
+    </section>
+  )}
+</BaseLayout>

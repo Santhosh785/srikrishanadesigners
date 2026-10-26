@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getServices } from '../lib/content';
+const services = await getServices();
+---
+
+<BaseLayout title="Page not found" description="The page you were looking for doesn't exist." noindex>
+  <section class="page-404">
+    <div class="container">
+      <p class="eyebrow">404</p>
+      <h1 class="section-title">This page <em>doesn't exist.</em></h1>
+      <p class="page-lede">Try one of these instead:</p>
+      <ul class="prose" style="margin-top: 16px;">
+        <li><a href="/">Home</a></li>
+        {services.map((s) => <li><a href={`/services/${s.id}/`}>{s.data.title}</a></li>)}
+        <li><a href="/blog/">Journal</a></li>
+        <li><a href="/contact/">Book a fitting</a></li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

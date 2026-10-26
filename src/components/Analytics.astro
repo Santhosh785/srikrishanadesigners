@@ -1,0 +1,25 @@
+---
+// GA4, loaded after the page is interactive so it never blocks rendering.
+// Any element with data-track="<event>" reports a click as that GA4 event.
+import { site } from '../site.config';
+const id = site.analytics.ga4Id;
+---
+
+{id && (
+  <script is:inline define:vars={{ id }}>
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', id);
+    window.addEventListener('load', () => {
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+      document.head.appendChild(s);
+    });
+    document.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-track]');
+      if (el) gtag('event', el.dataset.track, { link_url: el.href || '', page_path: location.pathname });
+    });
+  </script>
+)}

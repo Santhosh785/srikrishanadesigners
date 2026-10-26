@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import GalleryGrid from '../components/GalleryGrid.astro';
+import { site } from '../site.config';
+import { breadcrumbSchema } from '../lib/schema';
+
+const count = (await getCollection('gallery')).length;
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Gallery', path: '/gallery/' },
+];
+// An empty gallery is thin content, so it stays out of search until photos are added.
+---
+
+<BaseLayout
+  title="Our Work — Blouse & Bridal Wear Gallery"
+  description={`Photos of designer blouses, bridal wear and salwar suits stitched at ${site.name}, ${site.address.city}.`}
+  noindex={count === 0}
+  schema={[breadcrumbSchema(crumbs)]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>Our <em>work.</em></h1>
+      <p class="page-lede">Pieces stitched in our studio — every photo is of a finished client order.</p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container">
+      {count > 0 ? <GalleryGrid /> : <p class="empty-note">Photos of recent work are being added. Follow us on Instagram for the latest pieces.</p>}
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,118 @@
+---
+// Every public page renders through this layout: SEO head, site-wide
+// LocalBusiness/WebSite schema, navigation, footer and the mobile CTA bar.
+import { getImage } from 'astro:assets';
+import { SITE_NOINDEX } from 'astro:env/server';
+import { site, absoluteUrl } from '../site.config';
+import { businessSchema, websiteSchema, graph } from '../lib/schema';
+import { getReviews } from '../lib/content';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import MobileCta from '../components/MobileCta.astro';
+import Analytics from '../components/Analytics.astro';
+import logo from '../assets/sri-krishna-designers-logo.png';
+import heroPhoto from '../assets/photos/hero.jpg';
+import '../styles/global.css';
+import '../styles/pages.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Absolute or root-relative image for social cards; defaults to the studio photo. */
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  /** Extra JSON-LD nodes for this page (Service, BlogPosting, FAQPage, …). */
+  schema?: object[];
+  noindex?: boolean;
+  /** Message prefilled in WhatsApp links on this page. */
+  whatsappMessage?: string;
+  publishedTime?: Date;
+  modifiedTime?: Date;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  ogType = 'website',
+  schema = [],
+  noindex = false,
+  whatsappMessage,
+  publishedTime,
+  modifiedTime,
+} = Astro.props;
+
+const canonical = absoluteUrl(Astro.url.pathname);
+// Google truncates titles around 60 characters; long titles skip the brand suffix.
+const fullTitle =
+  title.includes(site.name) || title.length + site.name.length > 62 ? title : `${title} | ${site.name}`;
+
+const [logoImg, defaultOg] = await Promise.all([
+  getImage({ src: logo, width: 512, height: 512, format: 'webp' }),
+  getImage({ src: heroPhoto, width: 1200, height: 630, fit: 'cover', format: 'jpeg', quality: 80 }),
+]);
+const ogImageUrl = absoluteUrl(ogImage ?? defaultOg.src);
+
+const reviews = await getReviews();
+const jsonLd = graph(
+  businessSchema({ logo: absoluteUrl(logoImg.src), image: absoluteUrl(defaultOg.src), reviews }),
+  websiteSchema(),
+  ...schema,
+);
+const robots = SITE_NOINDEX || noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1';
+---
+
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={robots} />
+    <link rel="alternate" hreflang="en-IN" href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
+
+    <meta name="geo.region" content={`IN-${site.address.regionCode}`} />
+    <meta name="geo.placename" content={site.address.city} />
+    <meta name="geo.position" content={`${site.geo.lat};${site.geo.lng}`} />
+    <meta name="theme-color" content="#03275e" />
+    {site.verification.google && <meta name="google-site-verification" content={site.verification.google} />}
+    {site.verification.bing && <meta name="msvalidate.01" content={site.verification.bing} />}
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${site.name} blog`} href="/rss.xml" />
+    <link rel="alternate" type="text/plain" title="LLM summary" href="/llms.txt" />
+    <slot name="head" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <Analytics />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="site">
+      <Navbar />
+      <main id="main">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+    <MobileCta message={whatsappMessage} />
+  </body>
+</html>
