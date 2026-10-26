@@ -51,6 +51,10 @@ export const POST: APIRoute = async ({ request, clientAddress, redirect }) => {
     date: field(form, 'date', 10),
     occasion: field(form, 'occasion', 10),
     message: field(form, 'message', 1000),
+    // Set by the tools (cost estimator, measurement card, …) so the Sheet
+    // shows where a lead came from and what they worked out.
+    source: field(form, 'source', 40) || 'booking-form',
+    details: field(form, 'details', 2000),
     submittedAt: new Date().toISOString(),
     page: request.headers.get('referer') ?? '',
   };

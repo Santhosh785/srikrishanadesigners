@@ -1,4 +1,9 @@
-import { collection, config, fields } from '@keystatic/core';
+import { collection, config, fields, singleton } from '@keystatic/core';
+import { occasions, sareeTypes, bodyNotes } from './src/lib/vocab';
+import { labels } from './src/lib/designs-labels';
+
+const options = (values: readonly string[]) => values.map((value) => ({ value, label: labels[value] ?? value }));
+const item = { key: fields.text({ label: 'Key (no spaces)', validation: { isRequired: true } }), label: fields.text({ label: 'Name shown', validation: { isRequired: true } }) };
 
 // Browser editor at /keystatic. In production it commits to GitHub, which
 // triggers a Coolify redeploy; in `astro dev` it edits files on disk.
@@ -38,12 +43,89 @@ export default config({
   ui: {
     brand: { name: 'Sri Krishna Designers' },
     navigation: {
-      Content: ['blog', 'services'],
+      Content: ['blog', 'services', 'designs', 'pricing'],
       Proof: ['reviews', 'gallery'],
       People: ['authors'],
     },
   },
+  singletons: {
+    pricing: singleton({
+      label: 'Price list',
+      path: 'src/data/pricing',
+      format: { data: 'json' },
+      schema: {
+        note: fields.text({ label: 'Internal note', multiline: true }),
+        rangePercent: fields.integer({
+          label: 'Estimate range ± %',
+          description: 'How wide the cost estimator range is around the calculated price.',
+          defaultValue: 15,
+          validation: { min: 0, max: 50, isRequired: true },
+        }),
+        blouseTypes: fields.array(
+          fields.object({ ...item, base: fields.integer({ label: 'Base price (₹)', validation: { isRequired: true, min: 0 } }) }),
+          { label: 'Blouse types', itemLabel: (p) => p.fields.label.value },
+        ),
+        extras: fields.array(
+          fields.object({ ...item, price: fields.integer({ label: 'Adds (₹)', validation: { isRequired: true, min: 0 } }) }),
+          { label: 'Extras', itemLabel: (p) => p.fields.label.value },
+        ),
+        workLevels: fields.array(
+          fields.object({
+            ...item,
+            from: fields.integer({ label: 'From (₹)', validation: { isRequired: true, min: 0 } }),
+            to: fields.integer({ label: 'Up to (₹)', validation: { isRequired: true, min: 0 } }),
+          }),
+          { label: 'Hand embroidery levels', itemLabel: (p) => p.fields.label.value },
+        ),
+        express: fields.object(
+          {
+            percent: fields.integer({ label: 'Express surcharge %', validation: { isRequired: true, min: 0 } }),
+            label: fields.text({ label: 'Name shown', validation: { isRequired: true } }),
+          },
+          { label: 'Express delivery' },
+        ),
+      },
+    }),
+  },
   collections: {
+    designs: collection({
+      label: 'Neck & sleeve designs',
+      slugField: 'title',
+      path: 'src/content/designs/*',
+      format: { contentField: 'content' },
+      entryLayout: 'content',
+      columns: ['title', 'kind', 'addOn'],
+      schema: {
+        title: fields.slug({ name: { label: 'Design name', description: 'e.g. "Boat Neck Blouse Design"' } }),
+        kind: fields.select({
+          label: 'Type',
+          options: [{ label: 'Neckline / back', value: 'neck' }, { label: 'Sleeve', value: 'sleeve' }],
+          defaultValue: 'neck',
+        }),
+        description,
+        answer,
+        addOn: fields.integer({
+          label: 'Adds to blouse price (₹)',
+          description: 'Used by the cost estimator. 0 for styles included in the base price.',
+          defaultValue: 0,
+          validation: { min: 0, isRequired: true },
+        }),
+        occasions: fields.multiselect({ label: 'Occasions', options: options(occasions) }),
+        sarees: fields.multiselect({ label: 'Wear it with', options: options(sareeTypes) }),
+        flatters: fields.multiselect({ label: 'Flatters', options: options(bodyNotes) }),
+        avoidIf: fields.text({ label: 'Think twice if…' }),
+        photo: fields.image({
+          label: 'Photo of our work (optional)',
+          directory: 'src/assets/design-photos',
+          publicPath: '../../assets/design-photos/',
+        }),
+        photoAlt: fields.text({ label: 'Photo description (alt text)' }),
+        faqs,
+        order: fields.integer({ label: 'Order', defaultValue: 0 }),
+        updatedDate: fields.date({ label: 'Last updated', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
+        content: fields.markdoc({ label: 'Page content', extension: 'md' }),
+      },
+    }),
     blog: collection({
       label: 'Blog posts',
       slugField: 'title',

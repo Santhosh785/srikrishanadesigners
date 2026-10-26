@@ -1,0 +1,231 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import ToolResultActions from '../../components/ToolResultActions.astro';
+import { site } from '../../site.config';
+import { pricing, estimate } from '../../lib/pricing';
+import { getDesigns } from '../../lib/designs';
+import { priceRange } from '../../lib/content';
+
+const [necks, sleeves] = await Promise.all([getDesigns('neck'), getDesigns('sleeve')]);
+const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+
+// Default configuration, rendered server-side so crawlers see a real number.
+const defaultType = pricing.blouseTypes[0];
+const defaultNeck = necks.find((d) => d.data.addOn === 0) ?? necks[0];
+const defaultSleeve = sleeves.find((d) => d.data.addOn === 0) ?? sleeves[0];
+const defaultWork = pricing.workLevels[0];
+const initial = estimate({
+  base: defaultType.base,
+  addOns: (defaultNeck?.data.addOn ?? 0) + (defaultSleeve?.data.addOn ?? 0),
+  work: defaultWork,
+  express: false,
+});
+const cheapest = Math.min(...pricing.blouseTypes.map((t) => t.base));
+
+const faqs = [
+  {
+    question: 'How accurate is this blouse stitching estimate?',
+    answer: `It uses our current price list, so it is usually within ${pricing.rangePercent}% of the final quote. Hand embroidery varies the most — we confirm an exact price after seeing your fabric and the design, before any cutting starts.`,
+  },
+  {
+    question: 'What is included in the stitching price?',
+    answer: 'Cutting and stitching to your measurements, cotton lining, hooks or a zip, one trial fitting and the alterations from that trial. Fabric, hand embroidery and premium linings are priced separately, as shown in the estimator.',
+  },
+  {
+    question: 'Why does express delivery cost more?',
+    answer: `Express orders (under five days) are stitched ahead of the queue, often with extra hours, so we add ${pricing.express.percent}% to the stitching and work. Heavy aari or maggam work cannot be rushed below its minimum time.`,
+  },
+  {
+    question: 'Do you charge separately for the trial fitting?',
+    answer: 'No. One trial fitting and the adjustments from it are included. Later changes to the design itself, such as a new neckline, are quoted separately.',
+  },
+];
+---
+
+<ToolLayout
+  name="Blouse cost estimator"
+  title={`Blouse Stitching Cost Calculator (${site.address.city})`}
+  heading="Blouse stitching <em>cost estimator.</em>"
+  description={`Estimate your blouse stitching price in ${site.address.city}: pick the cut, neck, sleeves, lining and aari work and see a price range in seconds.`}
+  answer={`Blouse stitching at ${site.name} starts from ${inr(cheapest)} for a simple lined blouse. Princess cuts, padding, designer necks and backs add to that, and hand aari or maggam work adds the most — from ${inr(pricing.workLevels[1]?.from ?? 0)} for light work to ${inr(pricing.workLevels.at(-1)!.to)} for heavy bridal work.`}
+  path="/tools/blouse-cost-estimator/"
+  faqs={faqs}
+  whatsappMessage={`Hi ${site.name}, I'd like a quote for blouse stitching.`}
+>
+  <div class="tool-grid">
+    <form class="tool-inputs" data-estimator data-range={pricing.rangePercent} data-express={pricing.express.percent} onsubmit="return false">
+      <fieldset class="choice-group">
+        <legend>1. Blouse type</legend>
+        {pricing.blouseTypes.map((t, i) => (
+          <label class="choice">
+            <input type="radio" name="type" value={t.key} data-price={t.base} data-label={t.label} checked={i === 0} />
+            <span>{t.label}<small>{inr(t.base)}</small></span>
+          </label>
+        ))}
+      </fieldset>
+
+      {necks.length > 0 && (
+        <label class="select-field">
+          <span class="legend">2. Neck design</span>
+          <select name="neck">
+            {necks.map((d) => (
+              <option value={d.id} data-price={d.data.addOn} data-label={d.data.title} selected={d.id === defaultNeck?.id}>
+                {d.data.title}{d.data.addOn ? ` (+${inr(d.data.addOn)})` : ''}
+              </option>
+            ))}
+          </select>
+          <a href="/designs/" class="hint-link">Browse neck designs →</a>
+        </label>
+      )}
+
+      {sleeves.length > 0 && (
+        <label class="select-field">
+          <span class="legend">3. Sleeves</span>
+          <select name="sleeve">
+            {sleeves.map((d) => (
+              <option value={d.id} data-price={d.data.addOn} data-label={d.data.title} selected={d.id === defaultSleeve?.id}>
+                {d.data.title}{d.data.addOn ? ` (+${inr(d.data.addOn)})` : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      <fieldset class="choice-group">
+        <legend>4. Extras</legend>
+        {pricing.extras.map((x) => (
+          <label class="choice">
+            <input type="checkbox" name="extra" value={x.key} data-price={x.price} data-label={x.label} />
+            <span>{x.label}<small>+{inr(x.price)}</small></span>
+          </label>
+        ))}
+      </fieldset>
+
+      <fieldset class="choice-group">
+        <legend>5. Hand embroidery</legend>
+        {pricing.workLevels.map((w, i) => (
+          <label class="choice">
+            <input type="radio" name="work" value={w.key} data-from={w.from} data-to={w.to} data-label={w.label} checked={i === 0} />
+            <span>{w.label}<small>{w.to ? `+${inr(w.from)}–${inr(w.to)}` : 'Included'}</small></span>
+          </label>
+        ))}
+      </fieldset>
+
+      <fieldset class="choice-group">
+        <legend>6. Delivery</legend>
+        <label class="choice">
+          <input type="checkbox" name="express" data-label={pricing.express.label} />
+          <span>{pricing.express.label}<small>+{pricing.express.percent}%</small></span>
+        </label>
+      </fieldset>
+    </form>
+
+    <div class="tool-result">
+      <div class="card result-card">
+        <p class="eyebrow">Estimated price</p>
+        <p class="result-figure" data-result aria-live="polite">{inr(initial.low)} – {inr(initial.high)}</p>
+        <p class="result-note">Stitching + chosen work, excluding fabric. Final quote after we see your fabric and design.</p>
+        <p class="tool-summary" data-tool-summary>
+          {`Blouse: ${defaultType.label}\nNeck: ${defaultNeck?.data.title ?? '-'}\nSleeves: ${defaultSleeve?.data.title ?? '-'}\nWork: ${defaultWork.label}\nEstimate: ${inr(initial.low)} – ${inr(initial.high)}`}
+        </p>
+      </div>
+      <ToolResultActions
+        tool="cost-estimator"
+        toolLabel="Blouse quote request"
+        intro={`Hi ${site.name}, I used the cost estimator on your website. Could you confirm a quote for:`}
+      />
+    </div>
+  </div>
+
+  <Fragment slot="explainer">
+    <h2 class="section-title">Our blouse <em>price list.</em></h2>
+    <div class="prose" style="max-width: 820px;">
+      <p>
+        These are the figures the estimator uses. Every blouse includes cotton lining, hooks, one trial
+        fitting and the alterations from that trial. Prices are for stitching only — fabric is yours or bought separately.
+      </p>
+      <table>
+        <thead><tr><th>Blouse type</th><th>Stitching from</th></tr></thead>
+        <tbody>{pricing.blouseTypes.map((t) => <tr><td>{t.label}</td><td>{inr(t.base)}</td></tr>)}</tbody>
+      </table>
+      <table>
+        <thead><tr><th>Extra</th><th>Adds</th></tr></thead>
+        <tbody>{pricing.extras.map((x) => <tr><td>{x.label}</td><td>{inr(x.price)}</td></tr>)}</tbody>
+      </table>
+      <table>
+        <thead><tr><th>Hand embroidery</th><th>Adds</th></tr></thead>
+        <tbody>{pricing.workLevels.filter((w) => w.to).map((w) => <tr><td>{w.label}</td><td>{priceRange(w.from, w.to)}</td></tr>)}</tbody>
+      </table>
+      {(necks.some((d) => d.data.addOn) || sleeves.some((d) => d.data.addOn)) && (
+        <table>
+          <thead><tr><th>Neck / sleeve design</th><th>Adds</th></tr></thead>
+          <tbody>
+            {[...necks, ...sleeves].filter((d) => d.data.addOn).map((d) => (
+              <tr><td><a href={`/designs/${d.id}/`}>{d.data.title}</a></td><td>{inr(d.data.addOn)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <p>
+        Express delivery adds {pricing.express.percent}%. Not sure which cut you want? Read our
+        <a href="/services/designer-blouse-stitching/">designer blouse stitching</a> guide or
+        <a href="/contact/">book a consultation</a>.
+      </p>
+    </div>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-estimator]');
+  if (form) {
+    const out = document.querySelector<HTMLElement>('[data-result]')!;
+    const summary = document.querySelector<HTMLElement>('[data-tool-summary]')!;
+    const range = Number(form.dataset.range) / 100;
+    const expressPct = Number(form.dataset.express) / 100;
+    const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+    const round = (n: number) => Math.round(n / 50) * 50;
+
+    // Preselect from ?neck=…&sleeve=… (links from design pages).
+    const params = new URLSearchParams(location.search);
+    for (const key of ['neck', 'sleeve'] as const) {
+      const v = params.get(key);
+      const select = form.querySelector<HTMLSelectElement>(`select[name="${key}"]`);
+      if (v && select?.querySelector(`option[value="${CSS.escape(v)}"]`)) select.value = v;
+    }
+
+    const selectedOption = (name: string) =>
+      form.querySelector<HTMLSelectElement>(`select[name="${name}"]`)?.selectedOptions[0];
+
+    const update = () => {
+      const type = form.querySelector<HTMLInputElement>('input[name="type"]:checked')!;
+      const work = form.querySelector<HTMLInputElement>('input[name="work"]:checked')!;
+      const extras = [...form.querySelectorAll<HTMLInputElement>('input[name="extra"]:checked')];
+      const express = form.querySelector<HTMLInputElement>('input[name="express"]')!.checked;
+      const neck = selectedOption('neck');
+      const sleeve = selectedOption('sleeve');
+
+      const stitching =
+        Number(type.dataset.price) +
+        Number(neck?.dataset.price ?? 0) +
+        Number(sleeve?.dataset.price ?? 0) +
+        extras.reduce((s, x) => s + Number(x.dataset.price), 0);
+      const x = express ? 1 + expressPct : 1;
+      const low = round((stitching * (1 - range) + Number(work.dataset.from)) * x);
+      const high = round((stitching * (1 + range) + Number(work.dataset.to)) * x);
+      out.textContent = `${inr(low)} – ${inr(high)}`;
+
+      summary.textContent = [
+        `Blouse: ${type.dataset.label}`,
+        neck && `Neck: ${neck.dataset.label}`,
+        sleeve && `Sleeves: ${sleeve.dataset.label}`,
+        extras.length && `Extras: ${extras.map((e) => e.dataset.label).join(', ')}`,
+        `Work: ${work.dataset.label}`,
+        express && 'Express delivery',
+        `Estimate: ${inr(low)} – ${inr(high)}`,
+      ].filter(Boolean).join('\n');
+    };
+
+    form.addEventListener('change', update);
+    update();
+  }
+</script>

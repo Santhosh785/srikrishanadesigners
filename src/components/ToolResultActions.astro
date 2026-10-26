@@ -1,0 +1,87 @@
+---
+// Shared "what next" block for every tool: send the result to the studio on
+// WhatsApp (primary), print it, or save it to the bookings Sheet (optional).
+// The tool keeps an element with [data-tool-summary] up to date; this block
+// reads that text at click/submit time.
+import { MessageCircle, Printer } from '@lucide/astro';
+import { site } from '../site.config';
+
+interface Props {
+  tool: string; // short id stored as `source` in the Sheet
+  toolLabel: string;
+  intro: string; // first line of the WhatsApp message
+  printable?: boolean;
+}
+const { tool, toolLabel, intro, printable = false } = Astro.props;
+---
+
+<div class="card tool-actions" data-tool-actions data-intro={intro} data-wa={site.whatsapp}>
+  <h2>Send this to the studio</h2>
+  <p style="color: var(--ink-soft); margin-bottom: 16px;">
+    We'll reply on WhatsApp to confirm the details and book your fitting.
+  </p>
+  <div class="cta-stack">
+    <a class="btn btn-whatsapp" href={`https://wa.me/${site.whatsapp}`} rel="noopener" target="_blank" data-tool-wa data-track={`${tool}_whatsapp`}>
+      <MessageCircle size={16} aria-hidden="true" /> Send on WhatsApp
+    </a>
+    {printable && (
+      <button type="button" class="btn btn-outline" data-tool-print data-track={`${tool}_print`}>
+        <Printer size={16} aria-hidden="true" /> Print / save as PDF
+      </button>
+    )}
+  </div>
+
+  <details class="tool-save">
+    <summary>Or leave your number and we'll call you</summary>
+    <form method="post" action="/api/booking/" class="booking-form" data-tool-save>
+      <input type="hidden" name="source" value={tool} />
+      <input type="hidden" name="service" value={toolLabel} />
+      <input type="hidden" name="details" value="" />
+      <label>Your name<input name="name" autocomplete="name" required maxlength="80" /></label>
+      <label>Phone / WhatsApp<input name="phone" type="tel" autocomplete="tel" required pattern="[0-9+ ]{10,15}" /></label>
+      <div class="hp-field" aria-hidden="true"><label>Leave empty<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+      <button class="btn btn-primary" type="submit" data-track={`${tool}_save`}>Request a call back</button>
+      <p class="form-status" role="status" aria-live="polite" data-form-status></p>
+    </form>
+  </details>
+</div>
+
+<script>
+  const summaryText = () => document.querySelector('[data-tool-summary]')?.textContent?.trim().replace(/\n\s+/g, '\n') ?? '';
+
+  for (const box of document.querySelectorAll<HTMLElement>('[data-tool-actions]')) {
+    const wa = box.querySelector<HTMLAnchorElement>('[data-tool-wa]');
+    wa?.addEventListener('click', () => {
+      const text = `${box.dataset.intro}\n\n${summaryText()}`;
+      wa.href = `https://wa.me/${box.dataset.wa}?text=${encodeURIComponent(text)}`;
+    });
+
+    box.querySelector('[data-tool-print]')?.addEventListener('click', () => window.print());
+
+    const form = box.querySelector<HTMLFormElement>('[data-tool-save]');
+    const status = form?.querySelector<HTMLElement>('[data-form-status]');
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      form.querySelector<HTMLInputElement>('[name="details"]')!.value = summaryText().slice(0, 2000);
+      const button = form.querySelector('button');
+      if (button) button.disabled = true;
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || 'Something went wrong.');
+        if (status) {
+          status.dataset.state = 'ok';
+          status.textContent = 'Thank you — we will call you soon.';
+        }
+        form.reset();
+      } catch (err) {
+        if (status) {
+          status.dataset.state = 'error';
+          status.textContent = `${(err as Error).message} Please use WhatsApp instead.`;
+        }
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+  }
+</script>

@@ -1,0 +1,148 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import ToolResultActions from '../../components/ToolResultActions.astro';
+import { site } from '../../site.config';
+
+// Order follows how a tailor measures: torso, then neck/length, then sleeves.
+const measurements = [
+  { key: 'bust', label: 'Bust (round)', how: 'Around the fullest part of the bust, tape level across the back. Wear the bra you will wear with the blouse.' },
+  { key: 'underbust', label: 'Under-bust (round)', how: 'Snugly around the rib cage, just below the bust.' },
+  { key: 'waist', label: 'Blouse waist (round)', how: 'Around the rib cage where the blouse will end — usually 2–3 inches above the navel.' },
+  { key: 'shoulder', label: 'Shoulder width', how: 'Across the back from the tip of one shoulder bone to the other.' },
+  { key: 'apex', label: 'Shoulder to apex', how: 'From where the shoulder meets the neck, straight down to the bust point.' },
+  { key: 'apexGap', label: 'Apex to apex', how: 'Straight across between the two bust points.' },
+  { key: 'frontLength', label: 'Front length', how: 'From the shoulder (near the neck) over the bust point to where the blouse should end.' },
+  { key: 'backLength', label: 'Back length', how: 'From the base of the neck at the back down to the blouse hem.' },
+  { key: 'frontNeck', label: 'Front neck depth', how: 'From the neck–shoulder point straight down to how low you want the front neck.' },
+  { key: 'backNeck', label: 'Back neck depth', how: 'From the neck–shoulder point down the back to the desired depth.' },
+  { key: 'armhole', label: 'Armhole (round)', how: 'Loop the tape around the arm through the armpit and over the shoulder point.' },
+  { key: 'sleeveLength', label: 'Sleeve length', how: 'From the shoulder tip down to where the sleeve should end.' },
+  { key: 'bicep', label: 'Sleeve round (upper arm)', how: 'Around the fullest part of the upper arm, relaxed.' },
+  { key: 'sleeveOpening', label: 'Sleeve opening', how: 'Around the arm at the point where the sleeve ends.' },
+];
+
+const faqs = [
+  {
+    question: 'Can I take my own blouse measurements at home?',
+    answer: 'Yes. Use a soft measuring tape, wear the bra you plan to wear with the blouse, stand relaxed and ask someone to help with the back measurements. If you are unsure, bring a blouse that already fits well — we can copy its measurements exactly.',
+  },
+  {
+    question: 'Which blouse measurements matter most?',
+    answer: 'Bust, shoulder width, shoulder-to-apex and armhole decide most of the fit. Neck depths and lengths are style choices. If you only have time for four, take those four and we will check the rest at your trial.',
+  },
+  {
+    question: 'Should measurements be tight or loose?',
+    answer: 'Take body measurements snug but not pulling — one finger should slide under the tape. We add the right ease for the fabric and cut ourselves, so do not add extra inches.',
+  },
+  {
+    question: 'Do you still take measurements at the studio?',
+    answer: 'Yes. Home measurements help us prepare and are useful for repeat orders, but for bridal blouses and first orders we always confirm them in person at the consultation or trial.',
+  },
+];
+---
+
+<ToolLayout
+  name="Blouse measurement card"
+  title="Blouse Measurement Guide & Printable Size Card"
+  heading="Blouse measurement <em>guide &amp; card.</em>"
+  description="How to take all 14 blouse measurements at home, step by step, and save them as a size card you can print or send to your tailor on WhatsApp."
+  answer="To measure for a blouse you need 14 measurements: bust, under-bust, waist, shoulder, shoulder-to-apex, apex-to-apex, front and back length, front and back neck depth, armhole and three sleeve measurements. Measure snugly over the bra you will wear, and get help for the back."
+  path="/tools/blouse-measurement-card/"
+  faqs={faqs}
+  whatsappMessage={`Hi ${site.name}, I have a question about blouse measurements.`}
+>
+  <div class="tool-grid">
+    <form class="tool-inputs" data-measure onsubmit="return false">
+      <div class="unit-toggle" role="radiogroup" aria-label="Units">
+        <label class="choice"><input type="radio" name="unit" value="in" checked /><span>Inches</span></label>
+        <label class="choice"><input type="radio" name="unit" value="cm" /><span>Centimetres</span></label>
+      </div>
+      <label class="select-field">
+        <span class="legend">Name on the card (optional)</span>
+        <input name="person" autocomplete="name" maxlength="60" />
+      </label>
+      <ol class="measure-list">
+        {measurements.map((m, i) => (
+          <li>
+            <label for={`m-${m.key}`}><strong>{i + 1}. {m.label}</strong></label>
+            <p>{m.how}</p>
+            <input id={`m-${m.key}`} name={m.key} data-label={m.label} type="number" inputmode="decimal" min="0" max="200" step="0.25" />
+          </li>
+        ))}
+      </ol>
+    </form>
+
+    <div class="tool-result">
+      <div class="card result-card print-card">
+        <p class="eyebrow">Measurement card</p>
+        <p class="tool-summary" data-tool-summary>Fill in your measurements — they appear here and are saved on this device.</p>
+      </div>
+      <ToolResultActions
+        tool="measurement-card"
+        toolLabel="Measurement card"
+        intro={`Hi ${site.name}, here are my blouse measurements:`}
+        printable
+      />
+    </div>
+  </div>
+
+  <Fragment slot="explainer">
+    <h2 class="section-title">Tips for <em>accurate measurements.</em></h2>
+    <div class="prose" style="max-width: 820px;">
+      <ul>
+        <li>Use a soft tailor's tape, not a metal one, and keep it level all the way round.</li>
+        <li>Stand naturally — do not hold your breath or pull your shoulders back.</li>
+        <li>Measure over the bra you will actually wear; padding changes bust and apex measurements.</li>
+        <li>Write each number down immediately and measure twice if two readings differ.</li>
+        <li>Easiest of all: bring a blouse that fits you well and we will copy it.</li>
+      </ul>
+      <p>
+        More detail in our <a href="/blog/blouse-measurement-guide/">blouse measurement guide</a>. Ready to order?
+        Try the <a href="/tools/blouse-cost-estimator/">blouse cost estimator</a> or
+        <a href="/contact/">book a fitting</a>.
+      </p>
+    </div>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-measure]');
+  const summary = document.querySelector<HTMLElement>('[data-tool-summary]');
+  const KEY = 'skd-measurements';
+
+  if (form && summary) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}');
+      for (const [k, v] of Object.entries(saved)) {
+        const el = form.elements.namedItem(k);
+        if (el instanceof HTMLInputElement) {
+          if (el.type === 'radio') form.querySelector<HTMLInputElement>(`input[name="${k}"][value="${v}"]`)!.checked = true;
+          else el.value = String(v);
+        } else if (el instanceof RadioNodeList) {
+          el.value = String(v);
+        }
+      }
+    } catch {
+      // Storage unavailable (private mode): the card still works for this visit.
+    }
+
+    const update = () => {
+      const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      const unit = data.unit === 'cm' ? 'cm' : 'in';
+      const lines = [...form.querySelectorAll<HTMLInputElement>('input[type="number"]')]
+        .filter((i) => i.value)
+        .map((i) => `${i.dataset.label}: ${i.value} ${unit}`);
+      summary.textContent = lines.length
+        ? [data.person && `Name: ${data.person}`, ...lines].filter(Boolean).join('\n')
+        : 'Fill in your measurements — they appear here and are saved on this device.';
+      try {
+        localStorage.setItem(KEY, JSON.stringify(data));
+      } catch {
+        /* ignore */
+      }
+    };
+
+    form.addEventListener('input', update);
+    update();
+  }
+</script>

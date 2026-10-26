@@ -1,0 +1,24 @@
+{
+  "note": "TODO_FILL: placeholder prices — confirm every figure with the owner, then edit in /keystatic (Price list).",
+  "rangePercent": 15,
+  "blouseTypes": [
+    { "key": "simple", "label": "Simple lined blouse", "base": 600 },
+    { "key": "katori", "label": "Katori-cut blouse", "base": 850 },
+    { "key": "princess", "label": "Princess-cut blouse", "base": 950 },
+    { "key": "designer", "label": "Designer / panelled blouse", "base": 1400 }
+  ],
+  "extras": [
+    { "key": "padding", "label": "Padding (moulded cups)", "price": 250 },
+    { "key": "premium-lining", "label": "Satin or crepe lining instead of cotton", "price": 150 },
+    { "key": "latkans", "label": "Latkans / tassels", "price": 150 },
+    { "key": "piping", "label": "Contrast piping", "price": 100 },
+    { "key": "zip", "label": "Side zip instead of hooks", "price": 100 }
+  ],
+  "workLevels": [
+    { "key": "none", "label": "No hand embroidery", "from": 0, "to": 0 },
+    { "key": "light", "label": "Light aari work (neck border)", "from": 800, "to": 1800 },
+    { "key": "medium", "label": "Medium aari work (neck + sleeves)", "from": 2000, "to": 4500 },
+    { "key": "heavy", "label": "Heavy bridal aari or maggam work", "from": 5000, "to": 15000 }
+  ],
+  "express": { "percent": 30, "label": "Express delivery (under 5 days)" }
+}

@@ -34,6 +34,25 @@ booking endpoint run on the Node server.
 4. Confirm prices in `src/content/services/*.md`, then publish `blog/blouse-stitching-cost-guide.md`
    (`draft: false`).
 
+## Content structure
+
+- **Tools** (`src/pages/tools/`, `/designs/`): cost estimator, measurement card, bridal timeline planner,
+  design finder. Results go to WhatsApp or the bookings Sheet (`source` column = tool).
+- **Prices**: blouse types, extras, embroidery levels and express % live in Keystatic → *Price list*
+  (`src/data/pricing.json`); neck/sleeve add-ons live on each design (`src/content/designs/*.md`).
+- **Blog clusters**: blouse design & fit (pillar `blouse-design-guide`), bridal planning
+  (`bridal-blouse-planning-guide`), fabrics & care (`blouse-fabric-guide`), salwar/kurti
+  (`salwar-kurti-styles-guide`). New posts should link to their pillar, one tool and one service.
+
+### Brief for a new blog post (aim for ~2 a month)
+
+1. **Question** — the exact thing customers ask (WhatsApp/phone is the best source).
+2. **Short answer** — 40–60 words, answer in the first sentence (Keystatic "Short answer").
+3. **Sections** — 4–6 H2s phrased as questions; include one list and, where natural, a table.
+4. **Links** — its cluster pillar, one tool (`/tools/...` or `/designs/`), one service page.
+5. **FAQs** — 3–4 follow-up questions with 1–3 sentence answers.
+6. **Proof** — a photo of the studio's own work beats any stock image.
+
 ## Develop
 
 Requires Node ≥ 22.23.4.
@@ -64,7 +83,7 @@ In the bookings Google Sheet: Extensions → Apps Script, paste, then Deploy →
 function doPost(e) {
   const b = JSON.parse(e.postData.contents);
   SpreadsheetApp.getActiveSheet().appendRow([
-    b.submittedAt, b.name, b.phone, b.service, b.date, b.occasion, b.message, b.page,
+    b.submittedAt, b.source, b.name, b.phone, b.service, b.date, b.occasion, b.message, b.details, b.page,
   ]);
   return ContentService.createTextOutput('ok');
 }

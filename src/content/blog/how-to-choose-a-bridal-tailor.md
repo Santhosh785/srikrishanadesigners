@@ -44,7 +44,7 @@ A good bridal tailor is not just skilled; they are organised and honest about ti
 6. What happens if the outfit does not fit at the final fitting?
 7. Can you leave extra seam allowance in case my weight changes?
 
-Write down the answers. Comparing studios becomes much easier when you have the same information from each. Our [blouse stitching cost guide](/blog/blouse-stitching-cost-guide/) explains what typically drives the price.
+Write down the answers. Comparing studios becomes much easier when you have the same information from each. Our [blouse cost estimator](/tools/blouse-cost-estimator/) shows what typically drives the price.
 
 ## What are the red flags?
 

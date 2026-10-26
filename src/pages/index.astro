@@ -9,6 +9,7 @@ import PostCard from '../components/PostCard.astro';
 import { site, fullAddress } from '../site.config';
 import { faqSchema } from '../lib/schema';
 import { getCollection } from 'astro:content';
+import { tools } from '../lib/tools';
 import { getPosts, getServices, priceRange } from '../lib/content';
 
 const [posts, services, gallery] = await Promise.all([getPosts(), getServices(), getCollection('gallery')]);
@@ -75,6 +76,21 @@ const faqs = [
       </div>
     </section>
   )}
+
+  <section class="section" style="padding-top: 0;" aria-labelledby="tools-heading">
+    <div class="container">
+      <p class="eyebrow">Plan before you visit</p>
+      <h2 id="tools-heading" class="section-title">Free <em>tools.</em></h2>
+      <div class="card-grid">
+        {tools.map((t) => (
+          <article class="post-card">
+            <h3><a href={t.path}>{t.name}</a></h3>
+            <p>{t.blurb}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
 
   <Reviews />
 

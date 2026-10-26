@@ -3,9 +3,11 @@
 import type { APIRoute } from 'astro';
 import { site, fullAddress, sameAs, absoluteUrl } from '../site.config';
 import { getPosts, getServices, priceRange } from '../lib/content';
+import { getDesigns } from '../lib/designs';
+import { tools } from '../lib/tools';
 
 export const GET: APIRoute = async () => {
-  const [services, posts] = await Promise.all([getServices(), getPosts()]);
+  const [services, posts, designs] = await Promise.all([getServices(), getPosts(), getDesigns()]);
   const published = posts.filter((p) => !p.data.draft);
 
   const lines = [
@@ -28,6 +30,12 @@ export const GET: APIRoute = async () => {
       (s) =>
         `- [${s.data.title}](${absoluteUrl(`/services/${s.id}/`)}): ${s.data.answer} Price: ${priceRange(s.data.priceFrom, s.data.priceTo)}. Turnaround: ${s.data.turnaround}.`,
     ),
+    '',
+    '## Free tools',
+    ...tools.map((t) => `- [${t.name}](${absoluteUrl(t.path)}): ${t.blurb}`),
+    '',
+    '## Blouse designs',
+    ...designs.map((d) => `- [${d.data.title}](${absoluteUrl(`/designs/${d.id}/`)}): ${d.data.answer}`),
     '',
     '## Guides',
     ...published.map((p) => `- [${p.data.title}](${absoluteUrl(`/blog/${p.id}/`)}): ${p.data.description}`),

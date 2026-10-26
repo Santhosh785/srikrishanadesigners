@@ -189,6 +189,23 @@ export function breadcrumbSchema(crumbs: Crumb[]) {
   };
 }
 
+export function toolSchema(t: { name: string; description: string; path: string }) {
+  const url = absoluteUrl(t.path);
+  return {
+    '@type': 'WebApplication',
+    '@id': `${url}#app`,
+    name: t.name,
+    description: t.description,
+    url,
+    applicationCategory: 'LifestyleApplication',
+    operatingSystem: 'Any (web browser)',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'INR' },
+    provider: { '@id': ids.business },
+    inLanguage: site.locale,
+  };
+}
+
 export function graph(...nodes: object[]) {
   return { '@context': 'https://schema.org', '@graph': nodes };
 }

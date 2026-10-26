@@ -86,7 +86,7 @@ Work backwards from the function date:
 - **Family and guest blouses with medium work:** order 3–4 weeks before.
 - **Light sleeve work for a festival:** order 2 weeks before.
 
-If you are a bride planning several outfits, our guide on [how to choose a bridal tailor](/blog/how-to-choose-a-bridal-tailor/) includes a full planning timeline, and our [blouse stitching cost guide](/blog/blouse-stitching-cost-guide/) explains how embroidery affects the price.
+If you are a bride planning several outfits, our guide on [how to choose a bridal tailor](/blog/how-to-choose-a-bridal-tailor/) includes a full planning timeline, and our [blouse cost estimator](/tools/blouse-cost-estimator/) shows how embroidery affects the price.
 
 ## How should you care for an aari blouse after delivery?
 

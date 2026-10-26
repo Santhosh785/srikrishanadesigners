@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { site } from '../../site.config';
+import { breadcrumbSchema } from '../../lib/schema';
+import { tools } from '../../lib/tools';
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Tools', path: '/tools/' },
+];
+---
+
+<BaseLayout
+  title="Free Blouse & Bridal Planning Tools"
+  description={`Free tools from ${site.name}: blouse cost estimator, measurement card, bridal timeline planner and a neck & sleeve design finder.`}
+  schema={[breadcrumbSchema(crumbs)]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>Free planning <em>tools.</em></h1>
+      <p class="page-lede">Work out the price, take your measurements, plan your bridal outfits and find your design — then send it all to us on WhatsApp.</p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container card-grid">
+      {tools.map((t) => (
+        <article class="post-card">
+          <h2><a href={t.path}>{t.name}</a></h2>
+          <p>{t.blurb}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

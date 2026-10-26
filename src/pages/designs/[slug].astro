@@ -1,0 +1,109 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import BookCard from '../../components/BookCard.astro';
+import Faq from '../../components/Faq.astro';
+import { site } from '../../site.config';
+import { faqSchema, breadcrumbSchema } from '../../lib/schema';
+import { getDesigns, designSvg, label, type Design } from '../../lib/designs';
+import { formatDate } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const designs = await getDesigns();
+  return designs.map((design) => ({ params: { slug: design.id }, props: { design, all: designs } }));
+}
+
+const { design, all } = Astro.props as { design: Design; all: Design[] };
+const d = design.data;
+const { Content } = await render(design);
+const path = `/designs/${design.id}/`;
+
+// Same kind first (alternatives), then the other kind (pairings), by shared occasion.
+const related = all
+  .filter((x) => x.id !== design.id && x.data.occasions.some((o) => d.occasions.includes(o)))
+  .sort((a, b) => Number(a.data.kind !== d.kind) - Number(b.data.kind !== d.kind))
+  .slice(0, 4);
+
+const og = d.photo ? (await getImage({ src: d.photo, width: 1200, height: 630, fit: 'cover', format: 'jpeg' })).src : undefined;
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Design finder', path: '/designs/' },
+  { name: d.title, path },
+];
+const estimateLink = `/tools/blouse-cost-estimator/?${d.kind}=${design.id}`;
+---
+
+<BaseLayout
+  title={`${d.title}: Who It Suits & Tailoring Tips`}
+  description={d.description}
+  ogImage={og}
+  modifiedTime={d.updatedDate}
+  whatsappMessage={`Hi ${site.name}, I'd like a blouse with a ${d.title.toLowerCase()}.`}
+  schema={[breadcrumbSchema(crumbs), ...(d.faqs.length ? [faqSchema(d.faqs, path)] : [])]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>{d.title}</h1>
+      <p class="page-lede">{d.description}</p>
+      <p class="meta-line">
+        <span>{label(d.kind).replace(/s$/, '')}</span>
+        <span>{d.addOn ? `Adds ₹${d.addOn.toLocaleString('en-IN')}` : 'No extra cost'}</span>
+        <span>Updated <time datetime={d.updatedDate.toISOString()}>{formatDate(d.updatedDate)}</time></span>
+      </p>
+    </div>
+  </header>
+
+  <div class="container content-layout">
+    <article>
+      <figure class="design-hero">
+        <span class="design-art" set:html={designSvg(design.id)} role="img" aria-label={`Line drawing of a ${d.title.toLowerCase()}`} />
+        {d.photo && <Image src={d.photo} alt={d.photoAlt ?? d.title} width={600} height={800} />}
+      </figure>
+      <div class="answer-box">
+        <p class="eyebrow">Quick answer</p>
+        <p>{d.answer}</p>
+      </div>
+      <div class="prose"><Content /></div>
+      <div style="margin-top: 56px;"><Faq faqs={d.faqs} title={`${d.title}: questions`} /></div>
+    </article>
+
+    <aside>
+      <div class="card">
+        <h2>At a glance</h2>
+        <dl class="facts">
+          <div><dt>Price</dt><dd>{d.addOn ? `Adds ₹${d.addOn.toLocaleString('en-IN')} to the blouse` : 'Included in the base price'}</dd></div>
+          <div><dt>Best for</dt><dd>{d.occasions.map(label).join(' · ')}</dd></div>
+          <div><dt>Wear it with</dt><dd>{d.sarees.map(label).join(' · ')}</dd></div>
+          {d.flatters.length > 0 && <div><dt>Flatters</dt><dd>{d.flatters.map(label).join(' · ')}</dd></div>}
+          {d.avoidIf && <div><dt>Think twice if</dt><dd>{d.avoidIf}</dd></div>}
+        </dl>
+        <a class="btn btn-primary" style="width: 100%; margin-top: 20px;" href={estimateLink} data-track="design_estimate">
+          Price this design
+        </a>
+      </div>
+      <BookCard message={`Hi ${site.name}, I'd like a blouse with a ${d.title.toLowerCase()}.`} />
+    </aside>
+  </div>
+
+  {related.length > 0 && (
+    <section class="section" style="padding-top: 0;" aria-labelledby="related-designs">
+      <div class="container">
+        <h2 id="related-designs" class="section-title">Goes well <em>with.</em></h2>
+        <ul class="design-grid">
+          {related.map((r) => (
+            <li>
+              <a href={`/designs/${r.id}/`} class="design-card">
+                <span class="design-art" set:html={designSvg(r.id)} aria-hidden="true" />
+                <strong>{r.data.title}</strong>
+                <small>{label(r.data.kind).replace(/s$/, '')}</small>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+</BaseLayout>

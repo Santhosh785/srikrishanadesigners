@@ -1,0 +1,25 @@
+// Human-readable names for the design finder vocabulary (src/lib/vocab.ts).
+// Kept free of astro:* imports so keystatic.config.ts can use it too.
+export const labels: Record<string, string> = {
+  daily: 'Daily wear',
+  office: 'Office',
+  festive: 'Festive',
+  'wedding-guest': 'Wedding guest',
+  bridal: 'Bridal',
+  party: 'Party',
+  silk: 'Silk sarees',
+  cotton: 'Cotton sarees',
+  'georgette-chiffon': 'Georgette & chiffon',
+  lehenga: 'Lehenga',
+  'half-saree': 'Half-saree',
+  'broad-shoulders': 'Broad shoulders',
+  'narrow-shoulders': 'Narrow shoulders',
+  'short-neck': 'Shorter neck',
+  'long-neck': 'Longer neck',
+  'fuller-bust': 'Fuller bust',
+  petite: 'Petite frame',
+  'fuller-arms': 'Fuller arms',
+  'slim-arms': 'Slim arms',
+  neck: 'Necklines',
+  sleeve: 'Sleeves',
+};

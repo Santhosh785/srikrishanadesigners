@@ -1,0 +1,58 @@
+---
+// Shell for the interactive tools: header, breadcrumbs, WebApplication +
+// FAQ schema, the tool body (slot) and a crawlable explainer below it.
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Faq from '../components/Faq.astro';
+import { site } from '../site.config';
+import { toolSchema, faqSchema, breadcrumbSchema } from '../lib/schema';
+
+interface Props {
+  name: string;
+  title: string; // <title>
+  heading: string; // visible H1 (may contain <em>)
+  description: string;
+  answer: string;
+  path: string;
+  faqs: { question: string; answer: string }[];
+  whatsappMessage?: string;
+}
+const { name, title, heading, description, answer, path, faqs, whatsappMessage } = Astro.props;
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Tools', path: '/tools/' },
+  { name, path },
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  whatsappMessage={whatsappMessage ?? `Hi ${site.name}, I used your ${name.toLowerCase()} and have a question.`}
+  schema={[toolSchema({ name, description, path }), breadcrumbSchema(crumbs), ...(faqs.length ? [faqSchema(faqs, path)] : [])]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1 set:html={heading} />
+      <p class="page-lede">{description}</p>
+    </div>
+  </header>
+
+  <div class="container tool-shell">
+    <div class="answer-box">
+      <p class="eyebrow">Quick answer</p>
+      <p>{answer}</p>
+    </div>
+    <slot />
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <slot name="explainer" />
+      <div style="margin-top: 56px;">
+        <Faq faqs={faqs} />
+      </div>
+    </div>
+  </section>
+</BaseLayout>

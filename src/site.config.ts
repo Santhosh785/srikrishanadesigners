@@ -23,17 +23,20 @@ export const site = {
   address: {
     street: '12, Example Street', // TODO_FILL
     locality: 'Example Area', // TODO_FILL: neighbourhood
-    city: 'Chennai', // TODO_FILL
-    region: 'Tamil Nadu', // TODO_FILL
-    regionCode: 'TN', // TODO_FILL: ISO 3166-2:IN state code
-    postalCode: '600001', // TODO_FILL
+    city: 'Coimbatore',
+    region: 'Tamil Nadu',
+    regionCode: 'TN',
+    postalCode: '641001', // TODO_FILL
     country: 'IN',
   },
-  geo: { lat: 13.0827, lng: 80.2707 }, // TODO_FILL: shop pin from Google Maps
+  geo: { lat: 11.0168, lng: 76.9558 }, // TODO_FILL: exact shop pin (currently city centre)
   mapsUrl: 'https://maps.google.com/?cid=0000000000', // TODO_FILL: GBP "Share" link
   mapsEmbedUrl: '', // TODO_FILL: Google Maps embed src (optional; map hidden when empty)
   // Neighbourhoods/towns customers come from — used in areaServed + copy.
-  areasServed: ['Chennai'], // TODO_FILL: e.g. ['T. Nagar', 'Mylapore', 'Adyar', 'Chennai']
+  areasServed: [
+    'RS Puram', 'Race Course', 'Gandhipuram', 'Town Hall', 'Saibaba Colony', 'Vadavalli',
+    'Peelamedu', 'Saravanampatti', 'Singanallur', 'Coimbatore',
+  ],
   priceRange: '₹₹',
 
   // schema.org openingHoursSpecification. days: Mo Tu We Th Fr Sa Su

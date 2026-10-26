@@ -1,6 +1,7 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { occasions, sareeTypes, bodyNotes } from './lib/vocab';
 
 // Shapes here mirror keystatic.config.ts — change both together.
 
@@ -87,4 +88,28 @@ const gallery = defineCollection({
     }),
 });
 
-export const collections = { blog, services, authors, reviews, gallery };
+// Neck and sleeve styles: one indexable page each, plus the /designs/ finder.
+// addOn is the price this style adds to a base blouse — the cost estimator
+// reads it from here, so it is the only place that price lives.
+const designs = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/designs' }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      kind: z.enum(['neck', 'sleeve']),
+      description: z.string().max(170),
+      answer: z.string(),
+      addOn: z.number().int().min(0),
+      occasions: z.array(z.enum(occasions)).min(1),
+      sarees: z.array(z.enum(sareeTypes)).min(1),
+      flatters: z.array(z.enum(bodyNotes)).default([]),
+      avoidIf: z.string().optional(),
+      photo: image().nullish(),
+      photoAlt: z.string().optional(),
+      faqs: z.array(faq).default([]),
+      order: z.number().default(0),
+      updatedDate: z.coerce.date(),
+    }),
+});
+
+export const collections = { blog, services, authors, reviews, gallery, designs };

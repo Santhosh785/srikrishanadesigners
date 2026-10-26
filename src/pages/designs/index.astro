@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { site, absoluteUrl } from '../../site.config';
+import { breadcrumbSchema, toolSchema } from '../../lib/schema';
+import { getDesigns, designSvg, label } from '../../lib/designs';
+import { occasions, sareeTypes, bodyNotes } from '../../lib/vocab';
+
+const designs = await getDesigns();
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Design finder', path: '/designs/' },
+];
+const filters = [
+  { name: 'kind', title: 'Show', values: ['neck', 'sleeve'] },
+  { name: 'occasion', title: 'Occasion', values: [...occasions] },
+  { name: 'saree', title: 'Wearing it with', values: [...sareeTypes] },
+  { name: 'flatters', title: 'Flatters', values: [...bodyNotes] },
+];
+const description = `Find the right blouse neck and sleeve design for your saree, occasion and body type — ${designs.length} styles with tailoring notes and prices from ${site.name}.`;
+---
+
+<BaseLayout
+  title="Blouse Neck & Sleeve Design Finder"
+  description={description}
+  schema={[
+    toolSchema({ name: 'Blouse design finder', description, path: '/designs/' }),
+    breadcrumbSchema(crumbs),
+    {
+      '@type': 'ItemList',
+      name: 'Blouse neck and sleeve designs',
+      itemListElement: designs.map((d, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: d.data.title,
+        url: absoluteUrl(`/designs/${d.id}/`),
+      })),
+    },
+  ]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>Blouse design <em>finder.</em></h1>
+      <p class="page-lede">{description}</p>
+    </div>
+  </header>
+
+  <div class="container section" style="padding-top: 48px;">
+    <form class="finder-filters" data-finder aria-label="Filter designs" onsubmit="return false">
+      {filters.map((f) => (
+        <fieldset>
+          <legend>{f.title}</legend>
+          {f.values.map((v) => (
+            <label class="chip"><input type="checkbox" name={f.name} value={v} /><span>{label(v)}</span></label>
+          ))}
+        </fieldset>
+      ))}
+      <p class="finder-count" aria-live="polite" data-finder-count>{designs.length} designs</p>
+    </form>
+
+    <ul class="design-grid" data-design-grid>
+      {designs.map((d) => (
+        <li
+          data-kind={d.data.kind}
+          data-occasion={d.data.occasions.join(' ')}
+          data-saree={d.data.sarees.join(' ')}
+          data-flatters={d.data.flatters.join(' ')}
+        >
+          <a href={`/designs/${d.id}/`} class="design-card">
+            <span class="design-art" set:html={designSvg(d.id)} aria-hidden="true" />
+            <strong>{d.data.title}</strong>
+            <small>{label(d.data.kind).replace(/s$/, '')} · {d.data.addOn ? `+₹${d.data.addOn.toLocaleString('en-IN')}` : 'No extra cost'}</small>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="empty-note" data-finder-empty hidden>No design matches all of those filters — try removing one.</p>
+
+    <div class="card" style="margin-top: 56px; max-width: 760px;">
+      <h2>Found one you like?</h2>
+      <p style="color: var(--ink-soft); margin-bottom: 16px;">
+        Open a design to see who it suits and how we finish it, then price it in the
+        <a class="text-link" href="/tools/blouse-cost-estimator/">cost estimator</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-finder]');
+  const items = [...document.querySelectorAll<HTMLLIElement>('[data-design-grid] li')];
+  const count = document.querySelector<HTMLElement>('[data-finder-count]');
+  const empty = document.querySelector<HTMLElement>('[data-finder-empty]');
+
+  const apply = () => {
+    if (!form) return;
+    const groups = ['kind', 'occasion', 'saree', 'flatters'].map((name) => ({
+      name,
+      wanted: [...form.querySelectorAll<HTMLInputElement>(`input[name="${name}"]:checked`)].map((i) => i.value),
+    }));
+    let shown = 0;
+    for (const li of items) {
+      // Within a group any selected value matches; across groups all must match.
+      const ok = groups.every(({ name, wanted }) => {
+        if (!wanted.length) return true;
+        const have = (li.dataset[name] ?? '').split(' ');
+        return wanted.some((w) => have.includes(w));
+      });
+      li.hidden = !ok;
+      if (ok) shown++;
+    }
+    if (count) count.textContent = `${shown} design${shown === 1 ? '' : 's'}`;
+    if (empty) empty.hidden = shown > 0;
+  };
+
+  form?.addEventListener('change', apply);
+</script>
