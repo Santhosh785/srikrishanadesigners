@@ -1,0 +1,19 @@
+---
+import { MessageCircle, Phone, MapPin } from '@lucide/astro';
+import { site, whatsappLink } from '../site.config';
+
+interface Props {
+  message?: string;
+}
+const { message = `Hi ${site.name}, I'd like to book a fitting.` } = Astro.props;
+---
+
+<nav class="mobile-cta" aria-label="Quick contact">
+  <a class="wa" href={whatsappLink(message)} rel="noopener" target="_blank" data-track="whatsapp">
+    <MessageCircle size={18} aria-hidden="true" /> WhatsApp
+  </a>
+  <a href={`tel:${site.phone}`} data-track="call"><Phone size={18} aria-hidden="true" /> Call</a>
+  <a href={site.mapsUrl} rel="noopener" target="_blank" data-track="directions">
+    <MapPin size={18} aria-hidden="true" /> Map
+  </a>
+</nav>

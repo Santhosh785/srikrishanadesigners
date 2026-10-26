@@ -1,0 +1,23 @@
+---
+// Visible FAQ. Pages also emit faqSchema() with the same items — Google only
+// honours FAQ markup whose answers are visible on the page.
+interface Props {
+  faqs: { question: string; answer: string }[];
+  title?: string;
+}
+const { faqs, title = 'Frequently asked questions' } = Astro.props;
+---
+
+{faqs.length > 0 && (
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <h2 id="faq-heading" class="section-title">{title}</h2>
+    <div class="faq">
+      {faqs.map((f, i) => (
+        <details open={i === 0}>
+          <summary>{f.question}</summary>
+          <p>{f.answer}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+)}

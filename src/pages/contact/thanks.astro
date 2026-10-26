@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site, whatsappLink } from '../../site.config';
+---
+
+<BaseLayout title="Request received" description="Thank you — we'll be in touch to confirm your appointment." noindex>
+  <section class="page-404">
+    <div class="container">
+      <p class="eyebrow">Request received</p>
+      <h1 class="section-title">Thank <em>you.</em></h1>
+      <p class="page-lede">
+        We'll call or WhatsApp you within working hours ({site.hoursDisplay}) to confirm your appointment.
+        In a hurry? <a class="text-link" href={whatsappLink(`Hi ${site.name}, I just sent a booking request.`)} data-track="whatsapp">Message us on WhatsApp</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

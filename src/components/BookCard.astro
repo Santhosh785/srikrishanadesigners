@@ -1,0 +1,30 @@
+---
+import { MessageCircle, Phone, MapPin } from '@lucide/astro';
+import { site, whatsappLink } from '../site.config';
+
+interface Props {
+  message: string;
+  heading?: string;
+  showFormLink?: boolean;
+}
+const { message, heading = 'Book a fitting', showFormLink = true } = Astro.props;
+---
+
+<div class="card">
+  <h2>{heading}</h2>
+  <p style="margin-bottom: 18px; color: var(--ink-soft);">
+    Consultations and measurements at our studio. {site.hoursDisplay}.
+  </p>
+  <div class="cta-stack">
+    <a class="btn btn-whatsapp" href={whatsappLink(message)} rel="noopener" target="_blank" data-track="whatsapp">
+      <MessageCircle size={16} aria-hidden="true" /> WhatsApp us
+    </a>
+    <a class="btn btn-outline" href={`tel:${site.phone}`} data-track="call">
+      <Phone size={16} aria-hidden="true" /> {site.phoneDisplay}
+    </a>
+    <a class="btn btn-outline" href={site.mapsUrl} rel="noopener" target="_blank" data-track="directions">
+      <MapPin size={16} aria-hidden="true" /> Get directions
+    </a>
+    {showFormLink && <a class="btn btn-primary" href="/contact/" data-track="book_form_open">Booking form</a>}
+  </div>
+</div>

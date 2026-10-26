@@ -1,0 +1,63 @@
+---
+import { ArrowUpRight, Mail, Phone, MapPin, Clock } from '@lucide/astro';
+import { site, fullAddress, sameAs } from '../site.config';
+import { getServices } from '../lib/content';
+import '../styles/Footer.css';
+
+const services = await getServices();
+const year = new Date().getFullYear();
+const socialLabel = (url: string) =>
+  url.includes('instagram') ? 'Instagram'
+  : url.includes('youtube') ? 'YouTube'
+  : url.includes('facebook') ? 'Facebook'
+  : url.includes('justdial') ? 'Justdial'
+  : 'Google reviews';
+---
+
+<footer id="contact" class="footer">
+  <div class="container">
+    <section class="footer-invitation" aria-labelledby="contact-heading">
+      <p class="eyebrow">Appointments</p>
+      <h2 id="contact-heading">Your next piece starts<br />with a <em>conversation.</em></h2>
+      <a href={`tel:${site.phone}`} class="footer-phone" data-track="call">
+        {site.phoneDisplay} <ArrowUpRight size={22} aria-hidden="true" />
+      </a>
+    </section>
+
+    <div class="footer-details">
+      <div class="footer-brand">
+        <a href="/" class="footer-logo">Sri Krishna <em>Designers</em></a>
+        <p>{site.tagline}. A personal tailoring studio for women, built on craftsmanship, comfort, and care.</p>
+      </div>
+
+      <div class="footer-column">
+        <span class="footer-label">Visit the studio</span>
+        <a href={site.mapsUrl} rel="noopener" target="_blank" data-track="directions">
+          <MapPin size={16} aria-hidden="true" /> <address>{fullAddress}</address>
+        </a>
+        <a href={`tel:${site.phone}`} data-track="call"><Phone size={16} aria-hidden="true" /> {site.phoneDisplay}</a>
+        <a href={`mailto:${site.email}`}><Mail size={16} aria-hidden="true" /> {site.email}</a>
+        <p><Clock size={14} aria-hidden="true" /> {site.hoursDisplay}</p>
+      </div>
+
+      <nav class="footer-column" aria-label="Services">
+        <span class="footer-label">Services</span>
+        {services.map((s) => <a href={`/services/${s.id}/`}>{s.data.title}</a>)}
+        <a href="/gallery/">Our work</a>
+      </nav>
+
+      <nav class="footer-column" aria-label="More">
+        <span class="footer-label">Explore</span>
+        <a href="/blog/">Journal</a>
+        <a href="/about/">About</a>
+        <a href="/contact/">Book a fitting</a>
+        {sameAs.map((url) => <a href={url} rel="noopener me" target="_blank">{socialLabel(url)}</a>)}
+      </nav>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© {year} {site.name}</p>
+      <p>Designed with attention to detail.</p>
+    </div>
+  </div>
+</footer>

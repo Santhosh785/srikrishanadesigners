@@ -1,0 +1,115 @@
+---
+import { getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import BookCard from '../../components/BookCard.astro';
+import Faq from '../../components/Faq.astro';
+import GalleryGrid from '../../components/GalleryGrid.astro';
+import PostCard from '../../components/PostCard.astro';
+import { site, absoluteUrl } from '../../site.config';
+import { serviceSchema, faqSchema, breadcrumbSchema } from '../../lib/schema';
+import { getServices, getPosts, priceRange, formatDate, type Service } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const services = await getServices();
+  return services.map((service) => ({ params: { slug: service.id }, props: { service } }));
+}
+
+const { service } = Astro.props as { service: Service };
+const d = service.data;
+const { Content } = await render(service);
+const path = `/services/${service.id}/`;
+
+const related = (await getPosts()).filter((p) => p.data.services.some((s) => s.id === service.id)).slice(0, 3);
+const ogImage = d.image
+  ? (await getImage({ src: d.image, width: 1200, height: 630, fit: 'cover', format: 'jpeg' })).src
+  : undefined;
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Services', path: '/#services' },
+  { name: d.title, path },
+];
+const price = priceRange(d.priceFrom, d.priceTo);
+---
+
+<BaseLayout
+  title={d.seoTitle}
+  description={d.description}
+  ogImage={ogImage}
+  modifiedTime={d.updatedDate}
+  whatsappMessage={`Hi ${site.name}, I'd like to enquire about ${d.title.toLowerCase()}.`}
+  schema={[
+    serviceSchema({
+      slug: service.id,
+      title: d.title,
+      description: d.description,
+      priceFrom: d.priceFrom,
+      priceTo: d.priceTo,
+      image: ogImage && absoluteUrl(ogImage),
+    }),
+    breadcrumbSchema(crumbs),
+    ...(d.faqs.length ? [faqSchema(d.faqs, path)] : []),
+  ]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>{d.title} <em>in {site.address.city}</em></h1>
+      <p class="page-lede">{d.description}</p>
+      <p class="meta-line">
+        <span>{price}</span><span>{d.turnaround}</span>
+        <span>Updated <time datetime={d.updatedDate.toISOString()}>{formatDate(d.updatedDate)}</time></span>
+      </p>
+    </div>
+  </header>
+
+  <div class="container content-layout">
+    <article>
+      <div class="answer-box">
+        <p class="eyebrow">Quick answer</p>
+        <p>{d.answer}</p>
+      </div>
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    <aside>
+      <div class="card">
+        <h2>At a glance</h2>
+        <dl class="facts">
+          <div><dt>Price</dt><dd>{price}{d.priceNote && <><br /><small>{d.priceNote}</small></>}</dd></div>
+          <div><dt>Turnaround</dt><dd>{d.turnaround}</dd></div>
+          {d.includes.length > 0 && <div><dt>We make</dt><dd>{d.includes.join(' · ')}</dd></div>}
+          <div><dt>Where</dt><dd>Studio visits in {site.address.locality}, {site.address.city}</dd></div>
+        </dl>
+      </div>
+      <BookCard message={`Hi ${site.name}, I'd like to book a fitting for ${d.title.toLowerCase()}.`} />
+    </aside>
+  </div>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <GalleryGrid service={service.id} limit={8} />
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <Faq faqs={d.faqs} title={`${d.title}: your questions`} />
+    </div>
+  </section>
+
+  {related.length > 0 && (
+    <section class="section" style="padding-top: 0;" aria-labelledby="related-heading">
+      <div class="container">
+        <h2 id="related-heading" class="section-title">Helpful <em>reading.</em></h2>
+        <div class="card-grid">
+          {related.map((post) => <PostCard post={post} headingLevel="h3" />)}
+        </div>
+      </div>
+    </section>
+  )}
+</BaseLayout>

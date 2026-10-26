@@ -1,0 +1,49 @@
+---
+import { Image } from 'astro:assets';
+import { ArrowUpRight } from '@lucide/astro';
+import { site } from '../site.config';
+import '../styles/Hero.css';
+// TODO_FILL: replace with an original photo of the studio's own work.
+import heroPhoto from '../assets/photos/hero.jpg';
+---
+
+<section id="home" class="hero">
+  <div class="hero-wordmark" aria-hidden="true">Sri Krishna</div>
+  <div class="container hero-layout">
+    <div class="hero-copy">
+      <h1 class="eyebrow">Designer blouse &amp; bridal tailoring in {site.address.city}</h1>
+      <p class="hero-display">Designed for<br /><em>your moment.</em></p>
+      <p class="hero-description">
+        {site.name} is a women’s tailoring studio for designer and bridal blouses, lehengas and
+        made-to-measure salwar suits — with a personal consultation and a trial fitting for every piece.
+      </p>
+      <div class="hero-actions">
+        <a href="/contact/" class="btn btn-primary" data-track="hero_book">
+          Book an appointment <ArrowUpRight size={16} aria-hidden="true" />
+        </a>
+        <a href="#services" class="text-link">Explore services <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="hero-notes" aria-label="Our approach">
+        <div><strong>01</strong><span>Personal consultation</span></div>
+        <div><strong>02</strong><span>Made around you</span></div>
+        <div><strong>03</strong><span>Trial fitting</span></div>
+      </div>
+    </div>
+
+    <figure class="hero-portrait">
+      <div class="portrait-frame">
+        <Image
+          src={heroPhoto}
+          alt="Detailed traditional women's attire with fine embroidery"
+          class="hero-image"
+          widths={[480, 720, 990]}
+          sizes="(max-width: 700px) 100vw, 495px"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      <figcaption><span>SKD</span> Tailored with care</figcaption>
+      <div class="portrait-stamp" aria-hidden="true">The art<br />of a good<br />fit</div>
+    </figure>
+  </div>
+</section>

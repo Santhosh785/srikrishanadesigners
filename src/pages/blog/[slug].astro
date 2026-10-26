@@ -1,0 +1,147 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { render, getEntry, getEntries } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import BookCard from '../../components/BookCard.astro';
+import Faq from '../../components/Faq.astro';
+import PostCard from '../../components/PostCard.astro';
+import { site, absoluteUrl } from '../../site.config';
+import { articleSchema, faqSchema, breadcrumbSchema, personSchema } from '../../lib/schema';
+import { getPosts, formatDate, tagSlug, wordCount, type Post } from '../../lib/content';
+import heroPhoto from '../../assets/photos/hero.jpg';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props as { post: Post };
+const d = post.data;
+const { Content, headings } = await render(post);
+const path = `/blog/${post.id}/`;
+
+const author = await getEntry(d.author);
+const services = await getEntries(d.services);
+const related = (await getPosts())
+  .filter((p) => p.id !== post.id && p.data.tags.some((t) => d.tags.includes(t)))
+  .slice(0, 3);
+
+const og = await getImage({ src: d.cover ?? heroPhoto, width: 1200, height: 630, fit: 'cover', format: 'jpeg' });
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Journal', path: '/blog/' },
+  { name: d.title, path },
+];
+const toc = headings.filter((h) => h.depth === 2);
+const primaryService = services[0];
+---
+
+<BaseLayout
+  title={d.title}
+  description={d.description}
+  ogImage={og.src}
+  ogType="article"
+  noindex={d.draft}
+  publishedTime={d.pubDate}
+  modifiedTime={d.updatedDate ?? d.pubDate}
+  whatsappMessage={`Hi ${site.name}, I read "${d.title}" and have a question.`}
+  schema={[
+    articleSchema({
+      slug: post.id,
+      title: d.title,
+      description: d.description,
+      pubDate: d.pubDate,
+      updatedDate: d.updatedDate,
+      authorSlug: author.id,
+      image: absoluteUrl(og.src),
+      tags: d.tags,
+      wordCount: wordCount(post.body),
+    }),
+    personSchema({ slug: author.id, name: author.data.name, role: author.data.role, bio: author.data.bio }),
+    breadcrumbSchema(crumbs),
+    ...(d.faqs.length ? [faqSchema(d.faqs, path)] : []),
+  ]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>{d.title}</h1>
+      <p class="page-lede">{d.description}</p>
+      <p class="meta-line">
+        <span>By <a href={`/authors/${author.id}/`}>{author.data.name}</a></span>
+        <span>Published <time datetime={d.pubDate.toISOString()}>{formatDate(d.pubDate)}</time></span>
+        {d.updatedDate && <span>Updated <time datetime={d.updatedDate.toISOString()}>{formatDate(d.updatedDate)}</time></span>}
+      </p>
+    </div>
+  </header>
+
+  <div class="container content-layout">
+    <article>
+      {d.cover && (
+        <Image src={d.cover} alt={d.coverAlt ?? ''} width={1200} height={675} loading="eager" fetchpriority="high" style="margin-bottom: 36px; width: 100%; height: auto;" />
+      )}
+      <div class="answer-box">
+        <p class="eyebrow">Quick answer</p>
+        <p>{d.answer}</p>
+      </div>
+      <div class="prose">
+        <Content />
+      </div>
+
+      <div style="margin-top: 56px;">
+        <Faq faqs={d.faqs} />
+      </div>
+
+      {d.tags.length > 0 && (
+        <ul class="tag-list" style="margin-top: 40px;">
+          {d.tags.map((t) => <li><a href={`/blog/tag/${tagSlug(t)}/`}>{t}</a></li>)}
+        </ul>
+      )}
+    </article>
+
+    <aside>
+      {toc.length > 2 && (
+        <nav class="card" aria-label="In this article">
+          <h2>In this article</h2>
+          <ol class="prose" style="font-size: 0.92rem;">
+            {toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+          </ol>
+        </nav>
+      )}
+      {services.length > 0 && (
+        <div class="card">
+          <h2>Related services</h2>
+          <ul class="prose" style="font-size: 0.95rem;">
+            {services.map((s) => <li><a href={`/services/${s.id}/`}>{s.data.title}</a></li>)}
+          </ul>
+        </div>
+      )}
+      <BookCard
+        heading="Talk to a designer"
+        message={`Hi ${site.name}, I'd like to book a fitting${primaryService ? ` for ${primaryService.data.title.toLowerCase()}` : ''}.`}
+      />
+    </aside>
+  </div>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="card" style="max-width: 820px;">
+        <p class="eyebrow">About the author</p>
+        <h2 style="margin-top: 10px;"><a href={`/authors/${author.id}/`}>{author.data.name}</a></h2>
+        <p style="color: var(--ink-soft);">{author.data.role}. {author.data.bio}</p>
+      </div>
+    </div>
+  </section>
+
+  {related.length > 0 && (
+    <section class="section" style="padding-top: 0;" aria-labelledby="related-heading">
+      <div class="container">
+        <h2 id="related-heading" class="section-title">Keep <em>reading.</em></h2>
+        <div class="card-grid">
+          {related.map((p) => <PostCard post={p} headingLevel="h3" />)}
+        </div>
+      </div>
+    </section>
+  )}
+</BaseLayout>

@@ -1,0 +1,35 @@
+---
+// Renders only real reviews from src/content/reviews (added via Keystatic).
+// The section disappears entirely while there are none.
+import { site } from '../site.config';
+import { getReviews, formatDate } from '../lib/content';
+
+interface Props {
+  limit?: number;
+}
+const { limit = 6 } = Astro.props;
+const reviews = (await getReviews()).slice(0, limit);
+---
+
+{reviews.length > 0 && (
+  <section class="section" aria-labelledby="reviews-heading">
+    <div class="container">
+      <p class="eyebrow">Kind words</p>
+      <h2 id="reviews-heading" class="section-title">What our <em>clients say.</em></h2>
+      <div class="reviews-grid">
+        {reviews.map((r) => (
+          <figure class="review">
+            <span class="stars" aria-label={`${r.rating} out of 5 stars`}>{'★'.repeat(r.rating)}</span>
+            <blockquote>{r.text}</blockquote>
+            <footer>{r.author} · {r.source} · {formatDate(r.date)}</footer>
+          </figure>
+        ))}
+      </div>
+      {site.social.googleBusiness && !site.social.googleBusiness.includes('TODO_FILL') && (
+        <p style="margin-top: 24px;">
+          <a class="text-link" href={site.social.googleBusiness} rel="noopener" target="_blank">Read all reviews on Google</a>
+        </p>
+      )}
+    </div>
+  </section>
+)}

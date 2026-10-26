@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import BookCard from '../components/BookCard.astro';
+import { site, fullAddress } from '../site.config';
+import { breadcrumbSchema } from '../lib/schema';
+import { getServices } from '../lib/content';
+
+const [services, authors] = await Promise.all([getServices(), getCollection('authors')]);
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'About', path: '/about/' },
+];
+---
+
+<BaseLayout
+  title={`About ${site.name} — Women's Tailoring Studio`}
+  description={`${site.name} is a women's tailoring studio in ${site.address.city} for designer blouses, bridal wear and custom salwar suits, built on careful fitting.`}
+  schema={[
+    breadcrumbSchema(crumbs),
+    { '@type': 'AboutPage', url: Astro.url.href, about: { '@id': `${site.url}/#business` } },
+  ]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>A studio built on <em>the fit.</em></h1>
+      <p class="page-lede">{site.description}</p>
+    </div>
+  </header>
+
+  <div class="container content-layout">
+    <article class="prose">
+      {/* TODO_FILL: replace with the owner's real story — who started the studio, when, and why. */}
+      <h2>Who we are</h2>
+      <p>
+        {site.name} has been tailoring for women in {site.address.city} since {site.foundingYear}. Every
+        piece starts with a conversation: the occasion, how you like a garment to sit, and the details
+        that make it yours.
+      </p>
+      <h2>What we make</h2>
+      <ul>
+        {services.map((s) => <li><a href={`/services/${s.id}/`}>{s.data.title}</a> — {s.data.description}</li>)}
+      </ul>
+      <h2>How we work</h2>
+      <ol>
+        <li><strong>Consultation.</strong> We discuss the design, fabric and timeline, and confirm the price before cutting.</li>
+        <li><strong>Measurements.</strong> Taken in the studio, or matched from a blouse that already fits you well.</li>
+        <li><strong>Trial fitting.</strong> Adjustments are made at the trial so the final piece fits as intended.</li>
+        <li><strong>Delivery.</strong> On the agreed date, with any finishing touches checked together.</li>
+      </ol>
+      <h2>The team</h2>
+      {authors.map((a) => (
+        <p><a href={`/authors/${a.id}/`}><strong>{a.data.name}</strong></a> — {a.data.role}. {a.data.bio}</p>
+      ))}
+      <h2>Visit</h2>
+      <p>{fullAddress}. {site.hoursDisplay}.</p>
+    </article>
+    <aside>
+      <BookCard message={`Hi ${site.name}, I'd like to book a consultation.`} />
+    </aside>
+  </div>
+</BaseLayout>

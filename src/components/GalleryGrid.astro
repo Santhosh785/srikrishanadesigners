@@ -1,0 +1,25 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  service?: string;
+  limit?: number;
+}
+const { service, limit } = Astro.props;
+const photos = (await getCollection('gallery'))
+  .filter((p) => !service || p.data.service?.id === service)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, limit);
+---
+
+{photos.length > 0 && (
+  <div class="gallery-grid">
+    {photos.map((p) => (
+      <figure>
+        <Image src={p.data.image} alt={p.data.alt} width={480} height={640} />
+        {p.data.caption && <figcaption>{p.data.caption}</figcaption>}
+      </figure>
+    ))}
+  </div>
+)}

@@ -1,0 +1,22 @@
+---
+import { Image } from 'astro:assets';
+import type { Post } from '../lib/content';
+import { formatDate } from '../lib/content';
+
+interface Props {
+  post: Post;
+  headingLevel?: 'h2' | 'h3';
+}
+const { post, headingLevel: H = 'h2' } = Astro.props;
+const { title, description, pubDate, cover, coverAlt } = post.data;
+---
+
+<article class="post-card">
+  {cover && <Image src={cover} alt={coverAlt ?? ''} width={600} height={450} />}
+  <H><a href={`/blog/${post.id}/`}>{title}</a></H>
+  <p>{description}</p>
+  <div class="meta-line">
+    <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+    {post.data.draft && <span>Draft</span>}
+  </div>
+</article>
