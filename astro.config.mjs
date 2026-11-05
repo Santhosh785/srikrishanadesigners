@@ -24,6 +24,7 @@ export default defineConfig({
       filter: (page) =>
         !page.includes('/keystatic') &&
         !page.includes('/api/') &&
+        !page.includes('/admin/') &&
         !page.includes('/contact/thanks/') &&
         !page.includes('/blog/tag/') &&
         !page.includes('/dresses/') && // on-demand; listed in /sitemap-dresses.xml

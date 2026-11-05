@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import DressListPage from '../../../components/admin/DressListPage';
+---
+
+<AdminLayout title="Dresses">
+  <DressListPage client:only="react" />
+</AdminLayout>
