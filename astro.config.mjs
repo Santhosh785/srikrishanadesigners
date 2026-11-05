@@ -5,6 +5,31 @@ import sitemap from '@astrojs/sitemap';
 import keystatic from '@keystatic/astro';
 import { site } from './src/site.config.ts';
 
+// Keystatic's browser client calls /api/keystatic/... without a trailing slash,
+// which `trailingSlash: 'always'` turns into a 404 in `astro dev` (the local
+// editor then fails with a JSON parse error). Dev-only: add the slash before
+// Astro routes the request. Public URLs and the production build are untouched.
+const keystaticApiSlash = {
+  name: 'keystatic-api-trailing-slash',
+  enforce: 'post',
+  configureServer(server) {
+    // Astro puts its own trailing-slash check at the front of the stack in a
+    // post hook, so this has to be unshifted ahead of it from a later post hook.
+    return () => {
+      server.middlewares.stack.unshift({
+        route: '',
+        handle: (req, _res, next) => {
+          const [path, query] = (req.url ?? '').split('?');
+          if (path.startsWith('/api/keystatic/') && !path.endsWith('/')) {
+            req.url = path + '/' + (query === undefined ? '' : '?' + query);
+          }
+          next();
+        },
+      });
+    };
+  },
+};
+
 // Pages are prerendered to static HTML. Only Keystatic's admin/API routes and
 // /api/booking run on demand, which is why the Node adapter is needed.
 export default defineConfig({
@@ -19,6 +44,7 @@ export default defineConfig({
     '/gallery/': { status: 301, destination: '/dresses' },
   },
   adapter: node({ mode: 'standalone' }),
+  vite: { plugins: [keystaticApiSlash] },
   // React is only used by the Keystatic admin UI; public pages ship no React.
   integrations: [
     react(),
