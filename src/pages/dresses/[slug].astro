@@ -4,6 +4,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BookCard from '../../components/BookCard.astro';
+import QuoteDialog from '../../components/QuoteDialog.astro';
+import QuoteForm from '../../components/QuoteForm.astro';
 import { site } from '../../site.config';
 import { breadcrumbSchema } from '../../lib/schema';
 import { getDress, categoryInfo } from '../../lib/dresses';
@@ -26,6 +28,7 @@ const crumbs = [
   { name: 'Dresses', path: '/dresses/' },
   { name: dress.name, path: `/dresses/${dress.slug}/` },
 ];
+const quoteDress = { id: dress.id, slug: dress.slug, name: dress.name };
 const summary = dress.description?.trim().replace(/\s+/g, ' ');
 const description =
   summary && summary.length >= 50
@@ -45,6 +48,17 @@ const description =
       <Breadcrumbs crumbs={crumbs} />
       <h1>{dress.name}</h1>
       <p class="page-lede"><a href={category.url}>{category.label}</a></p>
+      <p class="dress-quote-cta">
+        <a
+          class="btn btn-primary"
+          href={`/dresses/${dress.slug}/#quote`}
+          data-quote-open
+          data-dress-id={dress.id}
+          data-dress-slug={dress.slug}
+          data-dress-name={dress.name}
+          data-track="quote_open"
+        >Get a quote</a>
+      </p>
     </div>
   </header>
 
@@ -76,11 +90,15 @@ const description =
           {dress.tags.map((t) => <li><a href={`/dresses/?tag=${encodeURIComponent(t)}`}>{t}</a></li>)}
         </ul>
       )}
-      <!-- task 8 fills this region with the quote form; it is also the no-JS fallback target for quote buttons. -->
-      <section id="quote" aria-label="Ask for a quote"></section>
+      <!-- Inline quote form: also the no-JS target of every "Get a quote" link. -->
+      <section id="quote" class="dress-quote" aria-labelledby="quote-heading">
+        <h2 id="quote-heading">Ask for a quote</h2>
+        <QuoteForm dress={quoteDress} />
+      </section>
     </article>
     <aside>
       <BookCard message={`Hi ${site.name}, I'd like a quote for "${dress.name}" (${site.url}/dresses/${dress.slug}/).`} />
     </aside>
   </div>
+  <QuoteDialog dress={quoteDress} />
 </BaseLayout>

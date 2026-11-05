@@ -31,6 +31,17 @@ const { label } = await categoryInfo(dress.category);
     <h3>{dress.name}</h3>
     <small>{label}</small>
   </a>
-  <!-- task 8: quote button -->
-  <slot name="quote" />
+  <!-- Quote button: opens QuoteDialog when the page mounts one, else links to the inline form. -->
+  <slot name="quote">
+    <a
+      class="btn btn-outline dress-card-quote"
+      href={`/dresses/${dress.slug}/#quote`}
+      data-quote-open
+      data-dress-id={dress.id}
+      data-dress-slug={dress.slug}
+      data-dress-name={dress.name}
+      data-track="quote_open"
+      aria-label={`Get a quote for ${dress.name}`}
+    >Get a quote</a>
+  </slot>
 </article>

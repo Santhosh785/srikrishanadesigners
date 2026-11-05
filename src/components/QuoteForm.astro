@@ -1,0 +1,59 @@
+---
+// Quote request form, shared by the popup (QuoteDialog) and the inline
+// #quote region on a dress page. Without JS it posts straight to the API,
+// which redirects to /contact/thanks/. QuoteDialog's script enhances every
+// `.quote-form` on the page (fetch, inline errors, success panel).
+import { site, whatsappLink } from '../site.config';
+import '../styles/quote.css';
+
+interface Props {
+  /** The dress being quoted; omit for the popup on the list page (set by JS). */
+  dress?: { id: string; slug: string; name: string };
+}
+const { dress } = Astro.props;
+
+// Today in the studio's timezone; the script refreshes it in the browser.
+const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+const waMessage = `Hi ${site.name}, I just requested a quote for {dress}.`;
+const waBase = whatsappLink('').split('?')[0];
+const waHref = dress ? whatsappLink(waMessage.replace('{dress}', dress.name)) : undefined;
+---
+
+<div class="quote-box" data-quote-box data-wa-base={waBase} data-wa-msg={waMessage} data-wa-href={waHref} data-wa-for={dress?.slug}>
+  <p class="quote-for" hidden={!dress}>Quote for: <strong data-quote-name>{dress?.name}</strong></p>
+  <form class="booking-form quote-form" method="post" action="/api/quote/" enctype="multipart/form-data">
+    <input type="hidden" name="dress_id" value={dress?.id ?? ''} />
+    <input type="hidden" name="dress_slug" value={dress?.slug ?? ''} />
+    <input type="hidden" name="dress_name" value={dress?.name ?? ''} />
+    <div class="form-row">
+      <label>Your name<input name="name" autocomplete="name" required maxlength="80" /></label>
+      <label>Phone / WhatsApp<input name="phone" type="tel" autocomplete="tel" required pattern="[0-9+ ]{10,15}" /></label>
+    </div>
+    <div class="form-row">
+      <label>Occasion date (optional)<input name="occasion_date" type="date" min={today} /></label>
+      <label>
+        Best time to call
+        <select name="contact_time">
+          <option value="any">Any time</option>
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+        </select>
+      </label>
+    </div>
+    <label>Changes you'd like (colour, sleeves…)<textarea name="message" maxlength="1000"></textarea></label>
+    <label>Reference photo (optional)<input name="photo" type="file" accept="image/*" /></label>
+    <div class="hp-field" aria-hidden="true">
+      <label>Leave this empty<input name="website" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    <button class="btn btn-primary" type="submit" data-track="quote_submit">
+      <span class="quote-spinner" aria-hidden="true"></span>Send quote request
+    </button>
+    <p class="form-status" role="status" aria-live="polite"></p>
+  </form>
+  <div class="quote-success" data-quote-success hidden>
+    <h3 tabindex="-1">Thank you!</h3>
+    <p>We'll call or WhatsApp you soon.</p>
+    <a class="btn btn-whatsapp" href={waHref ?? waBase} rel="noopener" target="_blank" data-track="whatsapp">Message us on WhatsApp</a>
+  </div>
+</div>

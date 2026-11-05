@@ -1,0 +1,113 @@
+---
+// "Get a quote" popup. Mount ONCE per page. Any [data-quote-open] link opens
+// it for that dress; without JS (or on pages without this component) the
+// link just goes to the dress page's inline #quote form.
+import QuoteForm from './QuoteForm.astro';
+
+interface Props {
+  /** Pre-fill for a single-dress page (the WhatsApp link is then built server-side). */
+  dress?: { id: string; slug: string; name: string };
+}
+const { dress } = Astro.props;
+---
+
+<dialog class="quote-dialog" data-quote-dialog aria-labelledby="quote-dialog-title">
+  <div class="quote-dialog-inner">
+    <div class="quote-dialog-head">
+      <h2 id="quote-dialog-title">Get a quote</h2>
+      <button type="button" class="quote-close" data-quote-close aria-label="Close">×</button>
+    </div>
+    <QuoteForm dress={dress} />
+  </div>
+</dialog>
+
+<script>
+  type Gtag = (...args: unknown[]) => void;
+  const MAX_PHOTO = 5 * 1024 * 1024;
+  const FAIL = "Couldn't send. Please call or WhatsApp us.";
+  const dialog = document.querySelector<HTMLDialogElement>('[data-quote-dialog]');
+  let opener: HTMLElement | null = null;
+
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  document.querySelectorAll<HTMLInputElement>('.quote-form [name=occasion_date]').forEach((i) => (i.min = d.toISOString().slice(0, 10)));
+
+  const input = (form: HTMLFormElement, name: string) => form.elements.namedItem(name) as HTMLInputElement;
+  const say = (form: HTMLFormElement, text: string, state = 'error') => {
+    const status = form.querySelector<HTMLElement>('.form-status')!;
+    status.dataset.state = state;
+    status.textContent = text;
+  };
+  const busy = (form: HTMLFormElement, on: boolean) => {
+    form.setAttribute('aria-busy', String(on));
+    form.querySelector<HTMLButtonElement>('[type=submit]')!.disabled = on;
+  };
+
+  if (dialog) {
+    const box = dialog.querySelector<HTMLElement>('[data-quote-box]')!;
+    const form = box.querySelector('form')!;
+    document.addEventListener('click', (e) => {
+      const link = (e.target as Element).closest<HTMLElement>('[data-quote-open]');
+      if (!link || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const { dressId = '', dressSlug = '', dressName = '' } = link.dataset;
+      form.reset();
+      form.hidden = false;
+      box.querySelector<HTMLElement>('[data-quote-success]')!.hidden = true;
+      say(form, '', '');
+      input(form, 'dress_id').value = dressId;
+      input(form, 'dress_slug').value = dressSlug;
+      input(form, 'dress_name').value = dressName;
+      box.querySelector('[data-quote-name]')!.textContent = dressName;
+      box.querySelector<HTMLElement>('.quote-for')!.hidden = !dressName;
+      opener = link;
+      dialog.showModal();
+      input(form, 'name').focus();
+    });
+    dialog.addEventListener('click', (e) => {
+      const r = dialog.getBoundingClientRect();
+      const outside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      if ((e.target === dialog && outside) || (e.target as Element).closest('[data-quote-close]')) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+      opener?.focus();
+      opener = null;
+    });
+  }
+
+  document.addEventListener('submit', async (e) => {
+    const form = e.target as HTMLFormElement;
+    if (!form.matches('.quote-form')) return;
+    e.preventDefault();
+    if (form.getAttribute('aria-busy') === 'true') return;
+    const photo = input(form, 'photo').files?.[0];
+    if (photo && photo.size > MAX_PHOTO) return say(form, 'Photo must be under 5 MB');
+    say(form, 'Sending…', '');
+    busy(form, true);
+    let res: Response;
+    try {
+      res = await fetch('/api/quote/', { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+    } catch {
+      busy(form, false);
+      return say(form, FAIL);
+    }
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.ok) {
+      busy(form, false);
+      return say(form, body.error || FAIL);
+    }
+    const box = form.closest<HTMLElement>('[data-quote-box]')!;
+    const slug = input(form, 'dress_slug').value;
+    const name = input(form, 'dress_name').value || 'a dress';
+    const { waHref, waFor, waBase, waMsg = '' } = box.dataset;
+    const ok = box.querySelector<HTMLElement>('[data-quote-success]')!;
+    ok.querySelector('a')!.href =
+      waHref && waFor === slug ? waHref : `${waBase}?text=${encodeURIComponent(waMsg.replace('{dress}', name))}`;
+    busy(form, false);
+    form.hidden = true;
+    box.querySelector<HTMLElement>('.quote-for')!.hidden = true;
+    ok.hidden = false;
+    ok.querySelector('h3')!.focus();
+    (window as unknown as { gtag?: Gtag }).gtag?.('event', 'quote_submit', { result: 'sent', dress_slug: slug, page_path: location.pathname });
+  });
+</script>

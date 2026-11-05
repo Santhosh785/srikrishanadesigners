@@ -1,0 +1,146 @@
+/* "Get a quote" popup and inline form (QuoteDialog / QuoteForm). Field
+   styles come from .booking-form in pages.css. */
+
+/* .booking-form / .quote-success set `display`, which would beat [hidden]. */
+.quote-box [hidden] {
+  display: none !important;
+}
+
+.quote-for {
+  margin-bottom: 16px;
+  color: var(--ink-soft);
+}
+
+.quote-for strong {
+  color: var(--ink);
+}
+
+.quote-form button[type='submit'] {
+  gap: 10px;
+}
+
+.quote-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: quote-spin 700ms linear infinite;
+}
+
+.quote-form[aria-busy='true'] .quote-spinner {
+  display: inline-block;
+}
+
+.quote-form button[disabled] {
+  cursor: progress;
+  opacity: 0.75;
+  transform: none;
+}
+
+@keyframes quote-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quote-spinner {
+    animation-duration: 2s;
+  }
+}
+
+.quote-success {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.quote-success h3 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  outline: none;
+}
+
+.quote-dialog {
+  width: min(100% - 32px, 520px);
+  max-height: calc(100dvh - 32px);
+  margin: auto; /* the global reset zeroes the UA centring margin */
+  padding: 0;
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.quote-dialog::backdrop {
+  background: rgba(3, 39, 94, 0.55);
+}
+
+.quote-dialog-inner {
+  padding: 22px 24px 28px;
+}
+
+.quote-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.quote-dialog-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+}
+
+.quote-close {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.quote-close:hover {
+  border-color: var(--ink);
+}
+
+html:has(.quote-dialog[open]) {
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .quote-dialog {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .quote-dialog-inner {
+    padding: 16px 16px 28px;
+  }
+}
+
+/* Detail page: inline form region and the prominent button. */
+.dress-quote {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 96px;
+}
+
+.dress-quote h2 {
+  margin-bottom: 8px;
+}

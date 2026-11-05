@@ -127,3 +127,13 @@
 .dress-description {
   white-space: pre-line;
 }
+
+/* "Get a quote" button under each card (outside the card link). */
+.dress-card-quote {
+  justify-self: start;
+  align-self: end;
+}
+
+.dress-quote-cta {
+  margin-top: 18px;
+}
