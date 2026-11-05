@@ -3,21 +3,11 @@
 // that appends it to the bookings Sheet.
 import type { APIRoute } from 'astro';
 import { BOOKING_SHEET_WEBHOOK_URL } from 'astro:env/server';
+import { createRateLimiter } from '../../lib/rate-limit';
 
 export const prerender = false;
 
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_PER_WINDOW = 5;
-const hits = new Map<string, number[]>();
-
-function rateLimited(ip: string) {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  recent.push(now);
-  hits.set(ip, recent);
-  if (hits.size > 5000) hits.clear();
-  return recent.length > MAX_PER_WINDOW;
-}
+const rateLimited = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 });
 
 const field = (form: FormData, key: string, max: number) =>
   String(form.get(key) ?? '').trim().slice(0, max);
