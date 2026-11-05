@@ -1,4 +1,4 @@
-/* Shared styles for inner pages (services, blog, contact, gallery) and
+/* Shared styles for inner pages (services, blog, contact) and
    site-wide pieces added in the Astro rebuild. Uses tokens from global.css. */
 
 ::selection {
@@ -426,7 +426,7 @@ body {
   color: var(--moss);
 }
 
-/* ---------- Reviews & gallery ---------- */
+/* ---------- Reviews ---------- */
 
 .reviews-grid {
   display: grid;
@@ -456,25 +456,6 @@ body {
 .stars {
   color: var(--clay);
   letter-spacing: 0.15em;
-}
-
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-.gallery-grid figure img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-}
-
-.gallery-grid figcaption {
-  padding-top: 8px;
-  color: var(--ink-soft);
-  font-size: 0.85rem;
 }
 
 .empty-note {

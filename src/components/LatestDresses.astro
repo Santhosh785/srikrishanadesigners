@@ -1,0 +1,32 @@
+---
+// "Recent work" strip of published dresses. Always mounted as a server island
+// (<LatestDresses server:defer ... />) so the hosting page stays prerendered
+// while the dresses come from Supabase at request time. With no dresses (or
+// Supabase unconfigured/unreachable) it renders nothing at all.
+import DressCard from './DressCard.astro';
+import { latestDresses } from '../lib/dresses';
+import type { DressCategory } from '../lib/dress-types';
+import '../styles/dresses.css';
+
+interface Props {
+  /** A services collection id; omit for all categories. */
+  category?: string;
+  limit?: number;
+}
+const { category, limit = 6 } = Astro.props;
+
+const dresses = await latestDresses(category as DressCategory | undefined, limit);
+const allHref = category ? `/dresses/?category=${encodeURIComponent(category)}` : '/dresses/';
+---
+
+{dresses.length > 0 && (
+  <section class="section" style="padding-top: 0;" aria-labelledby="recent-work-heading">
+    <div class="container">
+      <h2 id="recent-work-heading" class="section-title">Recent <em>work</em></h2>
+      <ul class="dress-grid">
+        {dresses.map((d) => <li><DressCard dress={d} /></li>)}
+      </ul>
+      <p style="margin-top: 24px;"><a href={allHref} class="text-link">See all dresses</a></p>
+    </div>
+  </section>
+)}

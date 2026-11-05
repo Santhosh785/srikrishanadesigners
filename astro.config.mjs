@@ -3,11 +3,7 @@ import node from '@astrojs/node';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import keystatic from '@keystatic/astro';
-import { readdirSync } from 'node:fs';
 import { site } from './src/site.config.ts';
-
-// /gallery/ is noindex while it has no photos, so keep it out of the sitemap too.
-const hasGallery = readdirSync('./src/content/gallery').some((f) => f.endsWith('.yaml'));
 
 // Pages are prerendered to static HTML. Only Keystatic's admin/API routes and
 // /api/booking run on demand, which is why the Node adapter is needed.
@@ -15,6 +11,13 @@ export default defineConfig({
   site: site.url,
   trailingSlash: 'always',
   output: 'static',
+  // The old photo gallery was replaced by the dress catalogue. The destination
+  // is the route id without its trailing slash so Astro matches it to
+  // src/pages/dresses/index.astro: the explicit 301 then applies to every
+  // method (HEAD included) and the Location still gets the trailing slash.
+  redirects: {
+    '/gallery/': { status: 301, destination: '/dresses' },
+  },
   adapter: node({ mode: 'standalone' }),
   // React is only used by the Keystatic admin UI; public pages ship no React.
   integrations: [
@@ -27,8 +30,7 @@ export default defineConfig({
         !page.includes('/admin/') &&
         !page.includes('/contact/thanks/') &&
         !page.includes('/blog/tag/') &&
-        !page.includes('/dresses/') && // on-demand; listed in /sitemap-dresses.xml
-        (hasGallery || !page.endsWith('/gallery/')),
+        !page.includes('/dresses/'), // on-demand; listed in /sitemap-dresses.xml
       i18n: { defaultLocale: 'en', locales: { en: 'en-IN' } },
     }),
   ],

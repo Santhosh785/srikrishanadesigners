@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BookCard from '../../components/BookCard.astro';
 import Faq from '../../components/Faq.astro';
-import GalleryGrid from '../../components/GalleryGrid.astro';
+import LatestDresses from '../../components/LatestDresses.astro';
 import PostCard from '../../components/PostCard.astro';
 import { site, absoluteUrl } from '../../site.config';
 import { serviceSchema, faqSchema, breadcrumbSchema } from '../../lib/schema';
@@ -90,11 +90,7 @@ const price = priceRange(d.priceFrom, d.priceTo);
     </aside>
   </div>
 
-  <section class="section" style="padding-top: 0;">
-    <div class="container">
-      <GalleryGrid service={service.id} limit={8} />
-    </div>
-  </section>
+  <LatestDresses server:defer category={service.id} limit={6} />
 
   <section class="section" style="padding-top: 0;">
     <div class="container">

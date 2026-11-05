@@ -75,19 +75,6 @@ const reviews = defineCollection({
   }),
 });
 
-// Photos of the studio's own finished work.
-const gallery = defineCollection({
-  loader: glob({ pattern: '**/*.yaml', base: './src/content/gallery' }),
-  schema: ({ image }) =>
-    z.object({
-      image: image(),
-      alt: z.string(),
-      caption: z.string().optional(),
-      service: reference('services').nullish(),
-      order: z.number().default(0),
-    }),
-});
-
 // Neck and sleeve styles: one indexable page each, plus the /designs/ finder.
 // addOn is the price this style adds to a base blouse — the cost estimator
 // reads it from here, so it is the only place that price lives.
@@ -112,4 +99,4 @@ const designs = defineCollection({
     }),
 });
 
-export const collections = { blog, services, authors, reviews, gallery, designs };
+export const collections = { blog, services, authors, reviews, designs };

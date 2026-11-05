@@ -44,7 +44,7 @@ export default config({
     brand: { name: 'Sri Krishna Designers' },
     navigation: {
       Content: ['blog', 'services', 'designs', 'pricing'],
-      Proof: ['reviews', 'gallery'],
+      Proof: ['reviews'],
       People: ['authors'],
     },
   },
@@ -231,25 +231,6 @@ export default config({
           defaultValue: 'Google',
         }),
         service: fields.relationship({ label: 'Service', collection: 'services' }),
-      },
-    }),
-    gallery: collection({
-      label: 'Gallery photos',
-      slugField: 'alt',
-      path: 'src/content/gallery/*',
-      schema: {
-        alt: fields.slug({
-          name: { label: 'Photo description', description: 'e.g. "Maroon bridal blouse with gold aari work on the sleeves"' },
-        }),
-        image: fields.image({
-          label: 'Photo',
-          directory: 'src/assets/gallery',
-          publicPath: '../../assets/gallery/',
-          validation: { isRequired: true },
-        }),
-        caption: fields.text({ label: 'Caption' }),
-        service: fields.relationship({ label: 'Service', collection: 'services' }),
-        order: fields.integer({ label: 'Order', defaultValue: 0 }),
       },
     }),
   },

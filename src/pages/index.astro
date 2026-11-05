@@ -2,18 +2,16 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
 import HomeServices from '../components/HomeServices.astro';
-import GalleryGrid from '../components/GalleryGrid.astro';
+import LatestDresses from '../components/LatestDresses.astro';
 import Reviews from '../components/Reviews.astro';
 import Faq from '../components/Faq.astro';
 import PostCard from '../components/PostCard.astro';
 import { site, fullAddress } from '../site.config';
 import { faqSchema } from '../lib/schema';
-import { getCollection } from 'astro:content';
 import { tools } from '../lib/tools';
 import { getPosts, getServices, priceRange } from '../lib/content';
 
-const [posts, services, gallery] = await Promise.all([getPosts(), getServices(), getCollection('gallery')]);
-const galleryCount = gallery.length;
+const [posts, services] = await Promise.all([getPosts(), getServices()]);
 const latest = posts.slice(0, 3);
 const lowest = Math.min(...services.map((s) => s.data.priceFrom));
 
@@ -66,16 +64,7 @@ const faqs = [
     </div>
   </section>
 
-  {galleryCount > 0 && (
-    <section class="section" style="padding-top: 0;">
-      <div class="container">
-        <p class="eyebrow">Our work</p>
-        <h2 class="section-title">Recently <em>finished.</em></h2>
-        <GalleryGrid limit={8} />
-        <p style="margin-top: 24px;"><a href="/gallery/" class="text-link">See the full gallery</a></p>
-      </div>
-    </section>
-  )}
+  <LatestDresses server:defer limit={8} />
 
   <section class="section" style="padding-top: 0;" aria-labelledby="tools-heading">
     <div class="container">
