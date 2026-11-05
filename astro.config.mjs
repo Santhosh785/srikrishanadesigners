@@ -48,6 +48,15 @@ export default defineConfig({
       SITE_NOINDEX: envField.boolean({ context: 'server', access: 'public', default: false }),
       // Runtime secret: Google Apps Script web-app URL that appends booking rows.
       BOOKING_SHEET_WEBHOOK_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Supabase (dress catalogue). Public URL + anon key are safe in the browser.
+      PUBLIC_SUPABASE_URL: envField.string({ context: 'client', access: 'public', optional: true }),
+      PUBLIC_SUPABASE_ANON_KEY: envField.string({ context: 'client', access: 'public', optional: true }),
+      SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // RelayOne WhatsApp alert to the owner; alert is skipped when any is missing.
+      RELAYONE_API_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      RELAYONE_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      RELAYONE_TEMPLATE: envField.string({ context: 'server', access: 'secret', optional: true }),
+      OWNER_WHATSAPP: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
 });
