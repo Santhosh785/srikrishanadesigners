@@ -1,4 +1,6 @@
 ---
+// Prerendered. The dress quote endpoint redirects here with ?type=quote; a
+// tiny client script swaps in the quote wording, so the page stays static.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { site, whatsappLink } from '../../site.config';
 ---
@@ -8,10 +10,21 @@ import { site, whatsappLink } from '../../site.config';
     <div class="container">
       <p class="eyebrow">Request received</p>
       <h1 class="section-title">Thank <em>you.</em></h1>
-      <p class="page-lede">
+      <p class="page-lede" data-thanks="default">
         We'll call or WhatsApp you within working hours ({site.hoursDisplay}) to confirm your appointment.
         In a hurry? <a class="text-link" href={whatsappLink(`Hi ${site.name}, I just sent a booking request.`)} data-track="whatsapp">Message us on WhatsApp</a>.
+      </p>
+      <p class="page-lede" data-thanks="quote" hidden>
+        We have your quote request and will contact you soon, within working hours ({site.hoursDisplay}).
+        In a hurry? <a class="text-link" href={whatsappLink(`Hi ${site.name}, I just sent a quote request.`)} data-track="whatsapp">Message us on WhatsApp</a>.
       </p>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  if (new URLSearchParams(location.search).get('type') === 'quote') {
+    document.querySelector<HTMLElement>('[data-thanks="default"]')?.setAttribute('hidden', '');
+    document.querySelector<HTMLElement>('[data-thanks="quote"]')?.removeAttribute('hidden');
+  }
+</script>
