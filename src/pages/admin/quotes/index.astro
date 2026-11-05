@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import QuoteInboxPage from '../../../components/admin/QuoteInboxPage';
+---
+
+<AdminLayout title="Quotes">
+  <QuoteInboxPage client:only="react" />
+</AdminLayout>
