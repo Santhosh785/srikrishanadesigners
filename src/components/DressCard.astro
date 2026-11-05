@@ -1,0 +1,36 @@
+---
+// One dress in the catalogue grid. The whole card links to the dress page;
+// the `quote` slot sits outside the link so a button can live there.
+import type { Dress } from '../lib/dress-types';
+import { dressPhotoUrl } from '../lib/dress-types';
+import { categoryInfo } from '../lib/dresses';
+
+interface Props {
+  dress: Dress;
+}
+const { dress } = Astro.props;
+const cover = dress.photos[0];
+const coverUrl = cover ? dressPhotoUrl(cover.thumb || cover.path) : null;
+const { label } = await categoryInfo(dress.category);
+---
+
+<article class="dress-card">
+  <a class="dress-card-link" href={`/dresses/${dress.slug}/`}>
+    {coverUrl && cover ? (
+      <img
+        src={coverUrl}
+        alt={`${dress.name} – ${label}`}
+        width={cover.w}
+        height={cover.h}
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <span class="dress-card-placeholder" aria-hidden="true"></span>
+    )}
+    <h3>{dress.name}</h3>
+    <small>{label}</small>
+  </a>
+  <!-- task 8: quote button -->
+  <slot name="quote" />
+</article>

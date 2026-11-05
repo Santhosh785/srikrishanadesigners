@@ -1,0 +1,110 @@
+---
+// Public dress catalogue. Rendered on demand so dresses the owner publishes
+// in the admin appear within ~60 s (data cache + Cache-Control) without a
+// rebuild. Filters are plain links (?category=…&tag=…), so they work without JS.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import DressCard from '../../components/DressCard.astro';
+import { site } from '../../site.config';
+import { breadcrumbSchema, imageGallerySchema } from '../../lib/schema';
+import { listDresses, allTags, dressCategories, isDressCategory } from '../../lib/dresses';
+import { dressPhotoUrl } from '../../lib/dress-types';
+import { absoluteUrl } from '../../site.config';
+import '../../styles/dresses.css';
+
+export const prerender = false;
+
+Astro.response.headers.set('Cache-Control', 'public, max-age=60');
+
+const categories = await dressCategories();
+const rawCategory = Astro.url.searchParams.get('category');
+// Unknown category values are ignored (treated as no filter).
+const category = isDressCategory(rawCategory, categories) ? rawCategory : undefined;
+const tag = Astro.url.searchParams.get('tag')?.trim().slice(0, 60) || undefined;
+
+const [all, tags, dresses] = await Promise.all([
+  listDresses(),
+  allTags(),
+  category || tag ? listDresses({ category, tag }) : Promise.resolve(null),
+]);
+const shown = dresses ?? all;
+
+const href = (c?: string, t?: string) => {
+  const params = new URLSearchParams();
+  if (c) params.set('category', c);
+  if (t) params.set('tag', t);
+  const qs = params.toString();
+  return qs ? `/dresses/?${qs}` : '/dresses/';
+};
+// Tag-filtered views are thin variations of the catalogue; only category views get their own canonical.
+const canonical = tag ? '/dresses/' : href(category);
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Dresses', path: '/dresses/' },
+];
+const activeLabel = categories.find((c) => c.id === category)?.label;
+const title = activeLabel ? `${activeLabel} — Dress Catalogue` : 'Dress Catalogue — Blouses, Bridal Wear & Suits';
+const description = `Browse designer blouses, bridal lehengas and salwar suits stitched at ${site.name}, ${site.address.city}. Pick a design and ask us for a quote.`;
+const labelOf = (id: string) => categories.find((c) => c.id === id)?.label ?? id;
+const galleryImages = shown
+  .filter((d) => d.photos[0])
+  .map((d) => ({
+    url: dressPhotoUrl(d.photos[0].path) ?? '',
+    name: `${d.name} – ${labelOf(d.category)}`,
+    width: d.photos[0].w,
+    height: d.photos[0].h,
+    pageUrl: absoluteUrl(`/dresses/${d.slug}/`),
+  }))
+  .filter((i) => i.url);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  noindex={all.length === 0}
+  schema={[
+    breadcrumbSchema(crumbs),
+    imageGallerySchema({ name: `${site.name} dress catalogue`, description, path: canonical, images: galleryImages }),
+  ]}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>Dress <em>catalogue.</em></h1>
+      <p class="page-lede">Designs stitched in our studio. Open any piece to see more photos and ask for a quote.</p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container">
+      {all.length > 0 && (
+        <nav class="dress-filters" aria-label="Filter dresses">
+          <ul class="category-tabs">
+            <li><a href={href(undefined, tag)} aria-current={!category ? 'page' : undefined}>All</a></li>
+            {categories.map((c) => (
+              <li><a href={href(c.id, tag)} aria-current={category === c.id ? 'page' : undefined}>{c.label}</a></li>
+            ))}
+          </ul>
+          {tags.length > 0 && (
+            <ul class="tag-chips">
+              <li><a href={href(category)} aria-current={!tag ? 'page' : undefined}>All tags</a></li>
+              {tags.map((t) => (
+                <li><a href={href(category, t)} aria-current={tag === t ? 'page' : undefined}>{t}</a></li>
+              ))}
+            </ul>
+          )}
+        </nav>
+      )}
+      {shown.length > 0 ? (
+        <ul class="dress-grid">
+          {shown.map((d) => <li><DressCard dress={d} /></li>)}
+        </ul>
+      ) : all.length > 0 ? (
+        <p class="empty-note">No dresses match this filter yet. <a href="/dresses/">See all dresses</a>.</p>
+      ) : (
+        <p class="empty-note">New designs are being added. Follow us on Instagram for the latest pieces, or <a href="/contact/">book a fitting</a>.</p>
+      )}
+    </div>
+  </section>
+</BaseLayout>

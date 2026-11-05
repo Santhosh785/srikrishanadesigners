@@ -1,0 +1,86 @@
+---
+// One dress: photo carousel (CSS scroll-snap, no JS), details and booking card.
+// Rendered on demand; unpublished or unknown slugs fall through to the 404 page.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import BookCard from '../../components/BookCard.astro';
+import { site } from '../../site.config';
+import { breadcrumbSchema } from '../../lib/schema';
+import { getDress, categoryInfo } from '../../lib/dresses';
+import { dressPhotoUrl } from '../../lib/dress-types';
+import '../../styles/dresses.css';
+
+export const prerender = false;
+
+const dress = Astro.params.slug ? await getDress(Astro.params.slug) : null;
+if (!dress) return new Response(null, { status: 404 });
+
+Astro.response.headers.set('Cache-Control', 'public, max-age=60');
+
+const category = await categoryInfo(dress.category);
+const photos = dress.photos
+  .map((p) => ({ ...p, url: dressPhotoUrl(p.path) }))
+  .filter((p): p is typeof p & { url: string } => !!p.url);
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Dresses', path: '/dresses/' },
+  { name: dress.name, path: `/dresses/${dress.slug}/` },
+];
+const summary = dress.description?.trim().replace(/\s+/g, ' ');
+const description =
+  summary && summary.length >= 50
+    ? summary.length > 160 ? `${summary.slice(0, 157).trimEnd()}…` : summary
+    : `${dress.name} — ${category.label.toLowerCase()} by ${site.name}, ${site.address.city}. See photos and ask for a quote.`;
+---
+
+<BaseLayout
+  title={`${dress.name} — ${category.label}`}
+  description={description}
+  ogImage={photos[0]?.url}
+  schema={[breadcrumbSchema(crumbs)]}
+  whatsappMessage={`Hi ${site.name}, I'd like a quote for "${dress.name}".`}
+>
+  <header class="page-header">
+    <div class="container">
+      <Breadcrumbs crumbs={crumbs} />
+      <h1>{dress.name}</h1>
+      <p class="page-lede"><a href={category.url}>{category.label}</a></p>
+    </div>
+  </header>
+
+  <div class="container content-layout">
+    <article class="prose">
+      {photos.length > 0 && (
+        <div>
+          <ul class="dress-carousel" aria-label={`Photos of ${dress.name}`}>
+            {photos.map((p, i) => (
+              <li>
+                <img
+                  src={p.url}
+                  alt={`${dress.name} – ${category.label}${photos.length > 1 ? ` (photo ${i + 1} of ${photos.length})` : ''}`}
+                  width={p.w}
+                  height={p.h}
+                  decoding="async"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  fetchpriority={i === 0 ? 'high' : undefined}
+                />
+              </li>
+            ))}
+          </ul>
+          {photos.length > 1 && <p class="dress-carousel-hint">Swipe or scroll for {photos.length} photos.</p>}
+        </div>
+      )}
+      {dress.description && <p class="dress-description">{dress.description}</p>}
+      {dress.tags.length > 0 && (
+        <ul class="tag-list" aria-label="Tags">
+          {dress.tags.map((t) => <li><a href={`/dresses/?tag=${encodeURIComponent(t)}`}>{t}</a></li>)}
+        </ul>
+      )}
+      <!-- task 8 fills this region with the quote form; it is also the no-JS fallback target for quote buttons. -->
+      <section id="quote" aria-label="Ask for a quote"></section>
+    </article>
+    <aside>
+      <BookCard message={`Hi ${site.name}, I'd like a quote for "${dress.name}" (${site.url}/dresses/${dress.slug}/).`} />
+    </aside>
+  </div>
+</BaseLayout>

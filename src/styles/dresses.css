@@ -1,0 +1,129 @@
+/* Dress catalogue (/dresses/ and /dresses/<slug>/). */
+
+.dress-filters {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.dress-filters ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.dress-filters a {
+  display: inline-block;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 0.86rem;
+}
+
+.dress-filters .tag-chips a {
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dress-filters a:hover {
+  border-color: var(--moss);
+  color: var(--moss);
+}
+
+.dress-filters a[aria-current] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.dress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.dress-card {
+  display: grid;
+  gap: 10px;
+  height: 100%;
+}
+
+.dress-card-link {
+  display: grid;
+  gap: 6px;
+}
+
+.dress-card img,
+.dress-card-placeholder {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  background: var(--line);
+}
+
+.dress-card h3 {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.dress-card-link:hover h3 {
+  color: var(--moss);
+}
+
+.dress-card small {
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Detail page: CSS-only scroll-snap carousel. */
+.dress-carousel {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 0 0 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  list-style: none;
+}
+
+.dress-carousel li {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+.dress-carousel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.dress-carousel-hint {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.dress-description {
+  white-space: pre-line;
+}

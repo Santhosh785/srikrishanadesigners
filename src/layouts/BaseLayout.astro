@@ -24,6 +24,8 @@ interface Props {
   /** Extra JSON-LD nodes for this page (Service, BlogPosting, FAQPage, …). */
   schema?: object[];
   noindex?: boolean;
+  /** Root-relative or absolute canonical URL; defaults to the current path (query string dropped). */
+  canonical?: string;
   /** Message prefilled in WhatsApp links on this page. */
   whatsappMessage?: string;
   publishedTime?: Date;
@@ -37,12 +39,13 @@ const {
   ogType = 'website',
   schema = [],
   noindex = false,
+  canonical: canonicalProp,
   whatsappMessage,
   publishedTime,
   modifiedTime,
 } = Astro.props;
 
-const canonical = absoluteUrl(Astro.url.pathname);
+const canonical = absoluteUrl(canonicalProp ?? Astro.url.pathname);
 // Google truncates titles around 60 characters; long titles skip the brand suffix.
 const fullTitle =
   title.includes(site.name) || title.length + site.name.length > 62 ? title : `${title} | ${site.name}`;

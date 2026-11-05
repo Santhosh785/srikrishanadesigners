@@ -26,6 +26,7 @@ export const GET: APIRoute = () => {
         'Disallow: /api/',
         '',
         `Sitemap: ${absoluteUrl('/sitemap-index.xml')}`,
+        `Sitemap: ${absoluteUrl('/sitemap-dresses.xml')}`,
         '',
       ].join('\n');
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

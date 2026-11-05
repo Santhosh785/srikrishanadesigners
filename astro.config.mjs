@@ -26,6 +26,7 @@ export default defineConfig({
         !page.includes('/api/') &&
         !page.includes('/contact/thanks/') &&
         !page.includes('/blog/tag/') &&
+        !page.includes('/dresses/') && // on-demand; listed in /sitemap-dresses.xml
         (hasGallery || !page.endsWith('/gallery/')),
       i18n: { defaultLocale: 'en', locales: { en: 'en-IN' } },
     }),

@@ -189,6 +189,31 @@ export function breadcrumbSchema(crumbs: Crumb[]) {
   };
 }
 
+export function imageGallerySchema(g: {
+  name: string;
+  description: string;
+  path: string;
+  images: { url: string; name: string; width?: number; height?: number; pageUrl?: string }[];
+}) {
+  const url = absoluteUrl(g.path);
+  return {
+    '@type': 'ImageGallery',
+    '@id': `${url}#gallery`,
+    name: g.name,
+    description: g.description,
+    url,
+    isPartOf: { '@id': ids.website },
+    about: { '@id': ids.business },
+    image: g.images.map((i) => ({
+      '@type': 'ImageObject',
+      contentUrl: i.url,
+      name: i.name,
+      ...(i.width && i.height && { width: i.width, height: i.height }),
+      ...(i.pageUrl && { url: i.pageUrl }),
+    })),
+  };
+}
+
 export function toolSchema(t: { name: string; description: string; path: string }) {
   const url = absoluteUrl(t.path);
   return {
