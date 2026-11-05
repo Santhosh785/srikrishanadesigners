@@ -4,7 +4,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from 'astro:env/client';
 
-export function createPublicClient(): SupabaseClient | null {
+// `timeoutMs` aborts every request after that long (used by server-side reads
+// so pages don't hang when Supabase is unreachable).
+export function createPublicClient(opts: { timeoutMs?: number } = {}): SupabaseClient | null {
   if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) return null;
-  return createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+  const { timeoutMs } = opts;
+  return createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, timeoutMs
+    ? { global: { fetch: (input, init) => fetch(input, { ...init, signal: init?.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs) }) } }
+    : undefined);
 }

@@ -9,6 +9,8 @@ import type { Dress, DressCategory } from './dress-types';
 import { getServices } from './content';
 
 const TTL_MS = 60 * 1000;
+// Give up on Supabase after this long so server islands don't hang when it is unreachable.
+const FETCH_TIMEOUT_MS = 3000;
 const cache = new Map<string, { at: number; value: unknown }>();
 
 // Failed loads (thrown errors) return the fallback and are not cached, so a
@@ -33,7 +35,7 @@ async function cached<T>(key: string, fallback: T, load: () => Promise<T>): Prom
 const COLUMNS = 'id, slug, name, category, description, tags, photos, published, sort, created_at, updated_at';
 
 function baseQuery() {
-  const client = createPublicClient();
+  const client = createPublicClient({ timeoutMs: FETCH_TIMEOUT_MS });
   if (!client) return null;
   return client
     .from('dresses')
