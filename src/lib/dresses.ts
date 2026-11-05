@@ -40,6 +40,9 @@ function baseQuery() {
   return client
     .from('dresses')
     .select(COLUMNS)
+    // supabase-js retries failed reads with backoff; with a hung Supabase that
+    // would turn the 3 s timeout into ~20 s, so fail on the first timeout.
+    .retry(false)
     .eq('published', true)
     .order('sort', { ascending: true })
     .order('created_at', { ascending: false });
